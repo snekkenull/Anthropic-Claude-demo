@@ -6,7 +6,7 @@ import { APIRoute } from 'astro';
 import { verifySignature } from '@/utils/auth'
 
 const apiKey = import.meta.env.ANTHROPIC_API_KEY
-const apiUrl = ((import.meta.env.ANTHROPIC_API_BASE_URL) || 'https://api.anthropic.com/v1/complete').trim().replace(/\/$/, '')
+const apiUrl = ((import.meta.env.ANTHROPIC_API_BASE_URL) || 'https://api.anthropic.com/v1/complete')
 //const apiUrl = 'https://api.anthropic.com/v1/complete';
 const sitePassword = import.meta.env.SITE_PASSWORD || ''
 const passList = sitePassword.split(',') || []

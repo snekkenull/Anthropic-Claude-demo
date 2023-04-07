@@ -7,6 +7,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 
+
 export default () => {
   let inputRef: HTMLTextAreaElement
   const [currentSystemRoleSettings, setCurrentSystemRoleSettings] = createSignal('')
@@ -17,6 +18,8 @@ export default () => {
   const [loading, setLoading] = createSignal(false)
   const [controller, setController] = createSignal<AbortController>(null)
   const [isStick, setStick] = createSignal(false)
+  const apiKey = import.meta.env.ANTHROPIC_API_KEY
+  const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
 
   createEffect(() => (isStick() && smoothToBottom()))
 
@@ -88,29 +91,27 @@ export default () => {
     setCurrentError(null)
     const storagePassword = localStorage.getItem('pass')
     try {
-      const controller = new AbortController()
-      setController(controller)
-      const requestMessageList = [...messageList()]
-      if (currentSystemRoleSettings()) {
-        requestMessageList.unshift({
-          role: 'system',
-          content: currentSystemRoleSettings(),
-        })
-      }
-      const timestamp = Date.now()
-      const response = await fetch('/api/generate', {
+      // Create the prompt for Anthropic API
+      const userQuestion = messageList()[messageList().length - 1].content;
+      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+  
+      // Set your Anthropic API Key
+      const apiKey = ANTHROPIC_API_KEY;
+  
+      // Fetch response from Anthropic API
+      const response = await fetch('https://api.anthropic.com/v1/complete', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
         body: JSON.stringify({
-          messages: requestMessageList,
-          time: timestamp,
-          pass: storagePassword,
-          sign: await generateSignature({
-            t: timestamp,
-            m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
-          }),
+          prompt: prompt,
+          stop_sequences: ['\n\nHuman:'],
+          max_tokens_to_sample: 200,
+          model,
         }),
-        signal: controller.signal,
-      })
+      });
       if (!response.ok) {
         const error = await response.json()
         console.error(error.error)
@@ -118,8 +119,11 @@ export default () => {
         throw new Error('Request failed')
       }
       const data = await response.json();
-      if (!data) throw new Error('No data')
+      if (!data) throw new Error('No data');
+  
+      // Extract the generated text from the response
       setCurrentAssistantMessage(data.choices[0].text.trim());
+  
 
     } catch (e) {
       console.error(e)

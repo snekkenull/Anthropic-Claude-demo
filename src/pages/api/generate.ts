@@ -14,14 +14,7 @@ const passList = sitePassword.split(',') || []
 export const post: APIRoute = async (context) => {
 
   const body = await context.request.json()
-  const { sign, time, messages, pass } = body
-  if (!messages) {
-    return new Response(JSON.stringify({
-      error: {
-        message: 'No input text.',
-      },
-    }), { status: 400 })
-  }
+
   if (sitePassword && !(sitePassword === pass || passList.includes(pass))) {
     return new Response(JSON.stringify({
       error: {

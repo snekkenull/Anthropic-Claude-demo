@@ -118,7 +118,6 @@ docker-compose down
 | 名称 | 描述 | 默认 |
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | 你的 Anthropic API Key | `null` |
-| `HTTPS_PROXY` | 为 Anthropic API 提供代理. e.g. `http://127.0.0.1:7890` | `null` |
 | `ANTHROPIC_API_BASE_URL` | 请求 Anthropic API 的自定义 Base URL. | `https://api.openai.com` |
 | `HEAD_SCRIPTS` | 在页面的 `</head>` 之前注入分析或其他脚本 | `null` |
 | `SECRET_KEY` | 项目的秘密字符串。用于生成 API 调用的签名 | `null` |

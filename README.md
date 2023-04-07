@@ -126,7 +126,6 @@ You can control the website through environment variables.
 | Name | Description | Default |
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Your API Key for Anthropic. | `null` |
-| `HTTPS_PROXY` | Provide proxy for Anthropic API. e.g. `http://127.0.0.1:7890` | `null` |
 | `ANTHROPIC_API_BASE_URL` | Custom base url for Anthropic API. | `https://api.openai.com` |
 | `HEAD_SCRIPTS` | Inject analytics or other scripts before `</head>` of the page | `null` |
 | `SECRET_KEY` | Secret string for the project. Use for generating signatures for API calls | `null` |

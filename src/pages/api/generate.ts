@@ -1,5 +1,5 @@
 // #vercel-disable-blocks
-import { ProxyAgent, fetch } from 'undici'
+//import { ProxyAgent, fetch } from 'undici'
 // #vercel-end
 
 import { APIRoute } from 'astro';

@@ -1,14 +1,15 @@
-# ChatGPT-API Demo
+# Anthropic-API Demo
 
 English | [简体中文](./README.zh-CN.md)
 
-A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/docs/guides/chat)
+A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
 
-**🍿 Live preview**: https://chatgpt.ddiu.me
+# Fork
+Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
-> ⚠️ Notice: Our API Key limit has been exhausted. So the demo site is not available now.
+>KNOWN BUG: 1. No stream function; 2. Some bugs unfixed.
 
-![chat-logo](https://cdn.staticaly.com/gh/yzh990918/static@master/chat-logo.webp)
+![chat-logo](https://lever-client-logos.s3.us-west-2.amazonaws.com/d63643d1-7a20-4e1b-b46d-5308d32d64c2-1622139505411.png)
 
 
 
@@ -23,7 +24,7 @@ A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/doc
    ```bash
     npm i -g pnpm
    ```
-3. **OPENAI_API_KEY**: Before running this application, you need to obtain the API key from OpenAI. You can register the API key at [https://beta.openai.com/signup](https://beta.openai.com/signup).
+3. **ANTHROPIC_API_KEY**: Before running this application, you need to obtain the API key from Anthropic. 
 
 ### Getting Started
 
@@ -31,9 +32,9 @@ A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/doc
    ```bash
     pnpm install
    ```
-2. Copy the `.env.example` file, then rename it to `.env`, and add your [OpenAI API key](https://platform.openai.com/account/api-keys) to the `.env` file.
+2. Copy the `.env.example` file, then rename it to `.env`, and add your [Anthropic API key](https://platform.openai.com/account/api-keys) to the `.env` file.
    ```bash
-    OPENAI_API_KEY=sk-xxx...
+    ANTHROPIC_API_KEY=sk-xxx...
    ```
 3. Run the application, the local project runs on `http://localhost:3000/`
    ```bash
@@ -44,7 +45,7 @@ A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/doc
 
 ### Deploy With Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fddiu8081%2Fchatgpt-demo&env=OPENAI_API_KEY&envDescription=OpenAI%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&envDescription=Anthropic%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys)
 
 
 
@@ -52,18 +53,18 @@ A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/doc
 > 
 > Deploy with the [`SITE_PASSWORD`](#environment-variables)
 > 
-> <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fddiu8081%2Fchatgpt-demo&env=OPENAI_API_KEY&env=SITE_PASSWORD&envDescription=OpenAI%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys" alt="Deploy with Vercel" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel" height=24 style="vertical-align: middle; margin-right: 4px;"></a>
+> <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&env=SITE_PASSWORD&envDescription=Anthropic%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys" alt="Deploy with Vercel" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel" height=24 style="vertical-align: middle; margin-right: 4px;"></a>
 
 ![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.4wzfb79qt7k0.webp)
 
 
 ### Deploy With Netlify
 
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/ddiu8081/chatgpt-demo#OPENAI_API_KEY=&HTTPS_PROXY=&OPENAI_API_BASE_URL=&HEAD_SCRIPTS=&SECRET_KEY=&OPENAI_API_MODEL=&SITE_PASSWORD=)
+[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/snekkenull/Anthropic-Claude-demo#ANTHROPIC_API_KEY=&HTTPS_PROXY=&ANTHROPIC_API_BASE_URL=&HEAD_SCRIPTS=&SECRET_KEY=&ANTHROPIC_API_MODEL=&SITE_PASSWORD=)
 
 **Step-by-step deployment tutorial:**
 
-1. [Fork](https://github.com/ddiu8081/chatgpt-demo/fork) this project，Go to [https://app.netlify.com/start](https://app.netlify.com/start) new Site, select the project you `forked` done, and connect it with your `GitHub` account.
+1. [Fork](https://github.com/snekkenull/Anthropic-Claude-demo/fork) this project，Go to [https://app.netlify.com/start](https://app.netlify.com/start) new Site, select the project you `forked` done, and connect it with your `GitHub` account.
 
 ![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.3nlt4hgzb16o.webp)
 
@@ -83,11 +84,11 @@ A demo repo based on [OpenAI GPT-3.5 Turbo API.](https://platform.openai.com/doc
 
 Before deploying the app, please make sure `.env` is configured normally.
 
-Environment variables refer to the documentation below. [Docker Hub address](https://hub.docker.com/r/ddiu8081/chatgpt-demo).
+Environment variables refer to the documentation below. [Docker Hub address](https://hub.docker.com/r/snekkenull/Anthropic-Claude-demo).
 
 **Direct run**
 ```bash
-docker run --name=chatgpt-demo --volume=/path/.env:/usr/src/.env:rw -p 3000:3000 -d ddiu8081/chatgpt-demo:latest
+docker run --name=Anthropic-Claude-demo --volume=/path/.env:/usr/src/.env:rw -p 3000:3000 -d snekkenull/Anthropic-Claude-demo:latest
 ```
 `/path/.env` represents the path to the local environment variable.
 
@@ -97,9 +98,9 @@ docker run --name=chatgpt-demo --volume=/path/.env:/usr/src/.env:rw -p 3000:3000
 version: '3'
 
 services:
-  chatgpt-demo:
-    image: ddiu8081/chatgpt-demo:latest
-    container_name: chatgpt-demo
+  Anthropic-Claude-demo:
+    image: snekkenull/Anthropic-Claude-demo:latest
+    container_name: Anthropic-Claude-demo
     restart: always
     ports:
       - '3000:3000'
@@ -124,40 +125,35 @@ You can control the website through environment variables.
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | Your API Key for OpenAI. | `null` |
-| `HTTPS_PROXY` | Provide proxy for OpenAI API. e.g. `http://127.0.0.1:7890` | `null` |
-| `OPENAI_API_BASE_URL` | Custom base url for OpenAI API. | `https://api.openai.com` |
+| `ANTHROPIC_API_KEY` | Your API Key for Anthropic. | `null` |
+| `HTTPS_PROXY` | Provide proxy for Anthropic API. e.g. `http://127.0.0.1:7890` | `null` |
+| `ANTHROPIC_API_BASE_URL` | Custom base url for Anthropic API. | `https://api.openai.com` |
 | `HEAD_SCRIPTS` | Inject analytics or other scripts before `</head>` of the page | `null` |
 | `SECRET_KEY` | Secret string for the project. Use for generating signatures for API calls | `null` |
 | `SITE_PASSWORD` | Set password for site, support multiple password separated by comma. If not set, site will be public | `null` |
-| `OPENAI_API_MODEL` | ID of the model to use. [List models](https://platform.openai.com/docs/api-reference/models/list) | `gpt-3.5-turbo` |
+| `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://platform.openai.com/docs/api-reference/models/list) | `gpt-3.5-turbo` |
 
 
 ## Frequently Asked Questions
 
-Q: TypeError: fetch failed (can't connect to OpenAI Api)
+Q: TypeError: fetch failed (can't connect to Anthropic Api)
 
-A: Configure environment variables `HTTPS_PROXY`，reference: https://github.com/ddiu8081/chatgpt-demo/issues/34
+A: Configure environment variables `HTTPS_PROXY`，reference: https://github.com/snekkenull/Anthropic-Claude-demo/issues/34
 
 Q: throw new TypeError(${context} is not a ReadableStream.)
 
-A: The Node version needs to be `v18` or later，reference: https://github.com/ddiu8081/chatgpt-demo/issues/65
+A: The Node version needs to be `v18` or later，reference: https://github.com/snekkenull/Anthropic-Claude-demo/issues/65
 
 Q: Accelerate domestic access without the need for proxy deployment tutorial?
 
-A: You can refer to this tutorial: https://github.com/ddiu8081/chatgpt-demo/discussions/270
+A: You can refer to this tutorial: https://github.com/snekkenull/Anthropic-Claude-demo/discussions/270
 
 Q: `PWA` is not working?
 
 A: Current `PWA` does not support deployment on Netlify, you can choose vercel or node deployment.
 ## Contributing
 
-This project exists thanks to all those who contributed.
-
-Thank you to all our supporters!🙏
-
-[![img](https://contrib.rocks/image?repo=ddiu8081/chatgpt-demo)](https://github.com/ddiu8081/chatgpt-demo/graphs/contributors)
-
+Thanks ddiu8081 [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 ## License
 
-MIT © [ddiu8081](https://github.com/ddiu8081/chatgpt-demo/blob/main/LICENSE)
+MIT © [snekkenull](https://github.com/snekkenull/Anthropic-Claude-demo/blob/main/LICENSE)

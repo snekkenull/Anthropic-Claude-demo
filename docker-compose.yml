@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  chatgpt-demo:
-    image: ddiu8081/chatgpt-demo:latest
-    container_name: chatgpt-demo
+  Anthropic-Claude-demo:
+    image: snekkenull/Anthropic-Claude-demo:latest
+    container_name: Anthropic-Claude-demo
     restart: always
     ports:
         - "3000:3000"

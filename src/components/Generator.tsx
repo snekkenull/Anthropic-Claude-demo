@@ -118,10 +118,11 @@ export default () => {
         throw new Error('Request failed')
       }
       const data = await response.json();
+      console.log('Response data:', data);
       if (!data) throw new Error('No data');
   
       // Extract the generated text from the response
-      setCurrentAssistantMessage(data.choices[0].text.trim());
+      setCurrentAssistantMessage(data.text.trim());
   
 
     } catch (e) {

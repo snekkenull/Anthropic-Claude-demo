@@ -98,7 +98,7 @@ export default () => {
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
   
       // Fetch response from Anthropic API
-      const response = await fetch('https://api.anthropic.com/v1/complete', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

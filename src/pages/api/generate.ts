@@ -1,14 +1,12 @@
-import { Client } from "@anthropic-ai/sdk";
-import { verifySignature } from "@/utils/auth";
-import type { APIRoute } from "astro";
+import { ProxyAgent, fetch } from 'undici'
+import { verifySignature } from '@/utils/auth'
+import type { APIRoute } from 'astro'
+import { completePrompt } from '@/utils/anthropicApi'
 
-const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
-const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-const sitePassword = import.meta.env.SITE_PASSWORD || "";
-const passList = sitePassword.split(",") || [];
-const client = new Client(apiKey);
+const sitePassword = import.meta.env.SITE_PASSWORD || ''
+const passList = sitePassword.split(',') || []
 
-export const post: APIRoute = async (context) => {
+export const post: APIRoute = async(context) => {
   const body = await context.request.json();
   const { sign, time, messages, pass } = body;
   if (!messages) {
@@ -51,25 +49,19 @@ export const post: APIRoute = async (context) => {
     );
   }
 
-  const prompt = messages
-    .map((message) => `\n\n${message.role}: ${message.content}`)
-    .join("") + "\n\nAssistant:";
+  const prompt = `${userPrompt}\n\nAssistant:`;
 
   try {
-    const completion = await client.complete({
-      prompt,
-      stop_sequences: ["\n\nHuman:"],
-      model,
-    });
-    return new Response(JSON.stringify(completion), { status: 200 });
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: {
-          message: error.message,
-        },
-      }),
-      { status: 500 }
-    );
+    const completion = await completePrompt(prompt);
+    const text = completion.choices[0].delta?.content || '';
+    return new Response(text, { status: 200 });
+  } catch (err) {
+    console.error(err)
+    return new Response(JSON.stringify({
+      error: {
+        code: err.name,
+        message: err.message,
+      },
+    }), { status: 500 })
   }
-};
+}

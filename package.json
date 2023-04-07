@@ -14,6 +14,7 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx,.astro --fix"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.4.3",
     "@astrojs/netlify": "2.0.0",
     "@astrojs/node": "^5.0.4",
     "@astrojs/solid-js": "^2.0.2",
@@ -33,6 +34,7 @@
     "undici": "^5.20.0"
   },
   "devDependencies": {
+    "@evan-yang/eslint-config": "^1.0.1",
     "@iconify-json/carbon": "^1.1.16",
     "@types/markdown-it": "^12.2.3",
     "@typescript-eslint/parser": "^5.54.1",
@@ -42,7 +44,6 @@
     "eslint-plugin-astro": "^0.24.0",
     "punycode": "^2.3.0",
     "unocss": "^0.50.1",
-    "@evan-yang/eslint-config": "^1.0.1",
     "vite-plugin-pwa": "^0.14.1"
   }
 }

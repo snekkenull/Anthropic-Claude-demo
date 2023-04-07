@@ -18,8 +18,6 @@ export default () => {
   const [loading, setLoading] = createSignal(false)
   const [controller, setController] = createSignal<AbortController>(null)
   const [isStick, setStick] = createSignal(false)
-  const apiKey = import.meta.env.ANTHROPIC_API_KEY
-  const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
 
   createEffect(() => (isStick() && smoothToBottom()))
 
@@ -96,7 +94,8 @@ export default () => {
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
       // Set your Anthropic API Key
-      const apiKey = ANTHROPIC_API_KEY;
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
   
       // Fetch response from Anthropic API
       const response = await fetch('https://api.anthropic.com/v1/complete', {

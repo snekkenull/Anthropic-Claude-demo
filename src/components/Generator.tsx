@@ -122,7 +122,7 @@ export default () => {
       if (!data) throw new Error('No data');
   
       // Extract the generated text from the response
-      setCurrentAssistantMessage(data.text.trim());
+      setCurrentAssistantMessage(data.completion.trim());
   
 
     } catch (e) {

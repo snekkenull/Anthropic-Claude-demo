@@ -20,7 +20,7 @@ import 'highlight.js/styles/atom-one-dark.css'
 
 <script>
   async function checkCurrentAuth() {
-    const password = getCookies('pass')
+    const password = getCookie('pass')
 
     if (!password) {
       window.location.href = '/password'

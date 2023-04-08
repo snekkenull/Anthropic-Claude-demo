@@ -5,8 +5,7 @@ const apiUrl = 'https://api.anthropic.com/v1/complete';
 
 export const post: APIRoute = async (context) => {
   const requestBody = await context.request.json();
-  // Enable streaming in the request
-  requestBody.stream = true;
+
   const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -18,7 +17,7 @@ export const post: APIRoute = async (context) => {
 
   const responseBody = await response.json();
 
-  return new Response(response.body, {
+  return new Response(JSON.stringify(responseBody), {
     status: response.status,
     headers: {
       'Content-Type': 'application/json',

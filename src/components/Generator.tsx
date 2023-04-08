@@ -7,6 +7,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 
+
 export default () => {
   let inputRef: HTMLTextAreaElement
   const [currentSystemRoleSettings, setCurrentSystemRoleSettings] = createSignal('')
@@ -61,17 +62,17 @@ export default () => {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    if (window?.umami) umami.trackEvent('chat_generate');
-    inputRef.value = '';
+    if (window?.umami) umami.trackEvent('chat_generate')
+    inputRef.value = ''
     setMessageList([
       ...messageList(),
       {
-        role: 'human',
-        content: `Human: ${inputValue}`,
+        role: 'user',
+        content: inputValue,
       },
-    ]);
-    requestWithLatestMessage();
-    instantToBottom();
+    ])
+    requestWithLatestMessage()
+    instantToBottom()
   }
 
   const smoothToBottom = useThrottleFn(() => {
@@ -82,73 +83,70 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
-  const requestWithLatestMessage = async() => {
-    setLoading(true)
-    setCurrentAssistantMessage('')
-    setCurrentError(null)
-    const storagePassword = localStorage.getItem('pass')
-    try {
-      const controller = new AbortController()
-      setController(controller)
-      const requestMessageList = [...messageList()]
-      if (currentSystemRoleSettings()) {
-        requestMessageList.unshift({
-          role: 'system',
-          content: currentSystemRoleSettings(),
-        })
-      }
-      const timestamp = Date.now()
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        body: JSON.stringify({
-          messages: requestMessageList,
-          time: timestamp,
-          pass: storagePassword,
-          sign: await generateSignature({
-            t: timestamp,
-            m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
-          }),
-        }),
-        signal: controller.signal,
-      })
-      if (!response.ok) {
-        const error = await response.json()
-        console.error(error.error)
-        setCurrentError(error.error)
-        throw new Error('Request failed')
-      }
-      const data = response.body
-      if (!data)
-        throw new Error('No data')
-
-      const reader = data.getReader()
-      const decoder = new TextDecoder('utf-8')
-      let done = false
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read()
-        if (value) {
-          const char = decoder.decode(value)
-          if (char === '\n' && currentAssistantMessage().endsWith('\n'))
-            continue
-
-          if (char)
-            setCurrentAssistantMessage(currentAssistantMessage() + char)
-
-          isStick() && instantToBottom()
-        }
-        done = readerDone
-      }
-    } catch (e) {
-      console.error(e)
-      setLoading(false)
-      setController(null)
-      return
-    }
-    archiveCurrentMessage()
-    isStick() && instantToBottom()
-  }
+  const requestWithLatestMessage = async () => {
+    setLoading(true);
+    setCurrentAssistantMessage("");
+    setCurrentError(null);
   
+    try {
+      const userQuestion = messageList()[messageList().length - 1].content;
+      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+  
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
+      const model = import.meta.env.ANTHROPIC_API_MODEL || "claude-v1";
+  
+      const abortController = new AbortController();
+      setController(abortController);
+  
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          stop_sequences: ["\n\nHuman:"],
+          max_tokens_to_sample: 2046,
+          model,
+          stream: true, // Enable streaming
+        }),
+        signal: abortController.signal,
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        console.error(error.error);
+        setCurrentError(error.error);
+        throw new Error("Request failed");
+      }
+  
+      // Handle streamed response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let result = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        result += chunk;
+        setCurrentAssistantMessage(result.trim());
+      }
+  
+      setLoading(false);
+      setController(null);
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      setController(null);
+      return;
+    }
+  
+    archiveCurrentMessage();
+    isStick() && instantToBottom();
+  };
+  
+
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

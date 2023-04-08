@@ -1,0 +1,19 @@
+---
+export function authCheck(request) {
+  const cookies = request.headers.get('cookie') || '';
+  const passwordCookie = cookies.split(';').find((cookie) => cookie.trim().startsWith('pass='));
+  const validPassword = import.meta.env.SITE_PASSWORD;
+
+  if (passwordCookie) {
+    const password = passwordCookie.trim().substring(5);
+    // Add your password validation logic here
+    //const validPassword = 'your_password_here';
+
+    if (password === validPassword) {
+      return true;
+    }
+  }
+
+  return false;
+}
+---

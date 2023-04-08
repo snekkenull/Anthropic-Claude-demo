@@ -109,7 +109,7 @@ export default () => {
           stop_sequences: ["\n\nHuman:"],
           max_tokens_to_sample: 2046,
           model,
-          stream: true, // Enable streaming
+          stream: true,
         }),
         signal: abortController.signal,
       });
@@ -125,13 +125,17 @@ export default () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let result = "";
+  
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value);
+  
+        const chunk = decoder.decode(value, { stream: !done });
         result += chunk;
-        setCurrentAssistantMessage(result.trim());
       }
+  
+      const data = JSON.parse(result); // Parse the JSON data once the stream is complete
+      setCurrentAssistantMessage(data.completion.trim());
   
       setLoading(false);
       setController(null);
@@ -145,6 +149,7 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
   
 
   const archiveCurrentMessage = () => {

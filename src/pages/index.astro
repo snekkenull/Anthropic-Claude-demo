@@ -9,7 +9,7 @@ import '../message.css'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/atom-one-dark.css'
 
-const isAuthenticated = authCheck(request);
+const isAuthenticated = authCheck(Astro.request);
 if (!isAuthenticated) {
   return {
     status: 302,

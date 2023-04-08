@@ -3,7 +3,6 @@ import Layout from '../layouts/Layout.astro'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
 import Generator from '../components/Generator'
-import { getCookie } from 'astro/cookies'
 
 import '../message.css'
 import 'katex/dist/katex.min.css'
@@ -19,6 +18,12 @@ import 'highlight.js/styles/atom-one-dark.css'
 </Layout>
 
 <script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
   async function checkCurrentAuth() {
     const password = getCookie('pass')
 

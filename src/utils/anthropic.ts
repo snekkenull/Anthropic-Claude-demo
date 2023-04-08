@@ -1,8 +1,9 @@
+
 import { createParser } from 'eventsource-parser'
 import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser'
 import type { ChatMessage } from '@/types'
 
-const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1.2'
+const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
 
 export const generatePayload = (apiKey: string, messages: ChatMessage[]): RequestInit & { dispatcher?: any } => ({
   headers: {
@@ -12,17 +13,20 @@ export const generatePayload = (apiKey: string, messages: ChatMessage[]): Reques
   method: 'POST',
   body: JSON.stringify({
     model,
-    prompt: formatPrompt(messages),
-    max_tokens_to_sample: 1024,
-    stop_sequences: ['Human:', 'Assistant:'],
+    prompt: messagesToPrompt(messages),
+    max_tokens_to_sample: 300,
+    stop_sequences: ['\n\nHuman:'],
+    stream: true,
   }),
 })
 
-const formatPrompt = (messages: ChatMessage[]): string => {
-  return messages.map(msg => `\n\n${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`).join('') + '\n\nAssistant:';
+const messagesToPrompt = (messages: ChatMessage[]): string => {
+  return messages
+    .map((message) => `\n\n${message.role === 'user' ? 'Human' : 'Assistant'}: ${message.content}`)
+    .join('')
 }
 
-export const parseAnthropicStream = (rawResponse: Response) => {
+export const parseOpenAIStream = (rawResponse: Response) => {
   const encoder = new TextEncoder()
   const decoder = new TextDecoder()
   if (!rawResponse.ok) {
@@ -42,17 +46,8 @@ export const parseAnthropicStream = (rawResponse: Response) => {
             return
           }
           try {
-            // response = {
-            //   id: 'chatcmpl-6pULPSegWhFgi0XQ1DtgA3zTa1WR6',
-            //   object: 'chat.completion.chunk',
-            //   created: 1677729391,
-            //   model: 'gpt-3.5-turbo-0301',
-            //   choices: [
-            //     { delta: { content: '你' }, index: 0, finish_reason: null }
-            //   ],
-            // }
             const json = JSON.parse(data)
-            const text = json.choices[0].delta?.content || ''
+            const text = json.text || ''
             const queue = encoder.encode(text)
             controller.enqueue(queue)
           } catch (e) {

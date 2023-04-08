@@ -82,22 +82,22 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
-  const requestWithLatestMessage = async () => {
-    setLoading(true);
-    setCurrentAssistantMessage('');
-    setCurrentError(null);
-    const storagePassword = localStorage.getItem('pass');
+  const requestWithLatestMessage = async() => {
+    setLoading(true)
+    setCurrentAssistantMessage('')
+    setCurrentError(null)
+    const storagePassword = localStorage.getItem('pass')
     try {
-      const controller = new AbortController();
-      setController(controller);
-      const requestMessageList = [...messageList()];
+      const controller = new AbortController()
+      setController(controller)
+      const requestMessageList = [...messageList()]
       if (currentSystemRoleSettings()) {
         requestMessageList.unshift({
           role: 'system',
           content: currentSystemRoleSettings(),
-        });
+        })
       }
-      const timestamp = Date.now();
+      const timestamp = Date.now()
       const response = await fetch('/api/generate', {
         method: 'POST',
         body: JSON.stringify({
@@ -110,40 +110,45 @@ export default () => {
           }),
         }),
         signal: controller.signal,
-      });
-  
+      })
       if (!response.ok) {
-        const error = await response.json();
-        console.error(error.error);
-        setCurrentError(error.error);
-        throw new Error('Request failed');
+        const error = await response.json()
+        console.error(error.error)
+        setCurrentError(error.error)
+        throw new Error('Request failed')
       }
-  
-      const data = await response.json();
-  
-      if (!data.chat_messages || data.chat_messages.length === 0) {
-        throw new Error('No data');
-      }
-  
-      const assistantMessage = data.chat_messages.find(
-        (message: ChatMessage) => message.sender === 'assistant'
-      );
-  
-      if (assistantMessage) {
-        setCurrentAssistantMessage(assistantMessage.text);
-        archiveCurrentMessage();
-        isStick() && instantToBottom();
-      }
-  
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-      setController(null);
-      return;
-    }
-  };
-  
+      const data = response.body
+      if (!data)
+        throw new Error('No data')
 
+      const reader = data.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let done = false
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read()
+        if (value) {
+          const char = decoder.decode(value)
+          if (char === '\n' && currentAssistantMessage().endsWith('\n'))
+            continue
+
+          if (char)
+            setCurrentAssistantMessage(currentAssistantMessage() + char)
+
+          isStick() && instantToBottom()
+        }
+        done = readerDone
+      }
+    } catch (e) {
+      console.error(e)
+      setLoading(false)
+      setController(null)
+      return
+    }
+    archiveCurrentMessage()
+    isStick() && instantToBottom()
+  }
+  
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

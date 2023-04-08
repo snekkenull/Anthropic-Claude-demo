@@ -134,8 +134,16 @@ export default () => {
         result += chunk;
       }
   
-      const data = JSON.parse(result); // Parse the JSON data once the stream is complete
-      setCurrentAssistantMessage(data.completion.trim());
+      const jsonRegex = /{[^}]+}/g;
+      const jsonData = result.match(jsonRegex);
+  
+      let message = "";
+      for (const jsonString of jsonData) {
+        const data = JSON.parse(jsonString);
+        message += data.completion;
+      }
+  
+      setCurrentAssistantMessage(message.trim());
   
       setLoading(false);
       setController(null);
@@ -149,6 +157,7 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
   
   
 

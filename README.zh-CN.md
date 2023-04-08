@@ -2,13 +2,14 @@
 
 [English](./README.md) | 简体中文
 
-一个基于 [Anthropic GPT-3.5 Turbo API](https://platform.openai.com/docs/guides/chat) 的 demo。
+一个基于 [GPT-3.5 Turbo API](https://platform.openai.com/docs/guides/chat) 的 demo。
+个人测试使用。
 
 修改自[Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
-> ⚠️ 注意: 未添加流式传输；一些奇怪的bug未修复。
+> ⚠️ 注意: 未添加流式传输；一些bug未修复（无持续对话，直接响应等）；说明未及时更新。
 
-![chat-logo](https://lever-client-logos.s3.us-west-2.amazonaws.com/d63643d1-7a20-4e1b-b46d-5308d32d64c2-1622139505411.png)
+![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 
 ## 本地运行
 
@@ -118,11 +119,9 @@ docker-compose down
 | 名称 | 描述 | 默认 |
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | 你的 Anthropic API Key | `null` |
-| `ANTHROPIC_API_BASE_URL` | 请求 Anthropic API 的自定义 Base URL. | `https://api.openai.com` |
 | `HEAD_SCRIPTS` | 在页面的 `</head>` 之前注入分析或其他脚本 | `null` |
-| `SECRET_KEY` | 项目的秘密字符串。用于生成 API 调用的签名 | `null` |
 | `SITE_PASSWORD` | 为网站设置密码，支持使用英文逗号创建多个密码。如果未设置，则该网站将是公开的 | `null` |
-| `ANTHROPIC_API_MODEL` | 使用的 Anthropic 模型. [模型列表](https://platform.openai.com/docs/api-reference/models/list) | `gpt-3.5-turbo` |
+| `ANTHROPIC_API_MODEL` | 使用的 Anthropic 模型. [模型列表](https://console.anthropic.com/docs/api/reference) | `claude-v1` |
 
 ## 常见问题
 

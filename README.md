@@ -3,13 +3,14 @@
 English | [简体中文](./README.zh-CN.md)
 
 A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
+Just for Personal test.
 
 # Fork
 Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
->KNOWN BUG: 1. No stream function; 2. Some bugs unfixed.
+>KNOWN BUG: 1. No stream function; 2. Some bugs unfixed(no continuous dialog, reponse no format...); 3. Unfinished readme.
 
-![chat-logo](https://lever-client-logos.s3.us-west-2.amazonaws.com/d63643d1-7a20-4e1b-b46d-5308d32d64c2-1622139505411.png)
+![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 
 
 
@@ -45,7 +46,7 @@ Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
 ### Deploy With Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&envDescription=Anthropic%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&envDescription=Anthropic%20API%20Key)
 
 
 
@@ -53,7 +54,7 @@ Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 > 
 > Deploy with the [`SITE_PASSWORD`](#environment-variables)
 > 
-> <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&env=SITE_PASSWORD&envDescription=Anthropic%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys" alt="Deploy with Vercel" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel" height=24 style="vertical-align: middle; margin-right: 4px;"></a>
+> <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&env=SITE_PASSWORD&envDescription=Anthropic%20API%20Key" alt="Deploy with Vercel" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel" height=24 style="vertical-align: middle; margin-right: 4px;"></a>
 
 ![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.4wzfb79qt7k0.webp)
 
@@ -126,11 +127,9 @@ You can control the website through environment variables.
 | Name | Description | Default |
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Your API Key for Anthropic. | `null` |
-| `ANTHROPIC_API_BASE_URL` | Custom base url for Anthropic API. | `https://api.openai.com` |
 | `HEAD_SCRIPTS` | Inject analytics or other scripts before `</head>` of the page | `null` |
-| `SECRET_KEY` | Secret string for the project. Use for generating signatures for API calls | `null` |
 | `SITE_PASSWORD` | Set password for site, support multiple password separated by comma. If not set, site will be public | `null` |
-| `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://platform.openai.com/docs/api-reference/models/list) | `gpt-3.5-turbo` |
+| `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://console.anthropic.com/docs/api/reference) | `claude-v1` |
 
 
 ## Frequently Asked Questions

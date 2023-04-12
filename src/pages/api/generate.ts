@@ -3,7 +3,7 @@ import { APIRoute } from 'astro';
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
 const apiUrl = 'https://api.anthropic.com/v1/complete';
 
-import { fetchEventSource } from '../utils/api';
+import { fetchEventSource } from '@/utils/api';
 
 
 export const post: APIRoute = async (context) => {

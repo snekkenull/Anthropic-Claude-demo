@@ -125,7 +125,8 @@ export default () => {
         if (done) break;
     
         data += decoder.decode(value);
-      
+        console.log('Received data:', data);
+
         const message = JSON.parse(data);
         setCurrentAssistantMessage(message.completion.trim());
       }

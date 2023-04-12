@@ -118,7 +118,9 @@ export default () => {
         setCurrentError(error.error);
         throw new Error('Request failed');
       }
+  
       console.log('API response received:', response);
+  
       // Read streaming response
       const reader = response.body.getReader();
       let text = '';
@@ -127,7 +129,12 @@ export default () => {
         if (done) break;
         text += new TextDecoder('utf-8').decode(value);
         console.log('Partial streaming text received:', text);
-        const message = JSON.parse(text);
+  
+        // Extract JSON data from the text/event-stream message
+        const jsonData = text.split('\n')[1];
+        if (!jsonData) continue;
+  
+        const message = JSON.parse(jsonData);
         setCurrentAssistantMessage(message.completion.trim());
       }
     } catch (e) {
@@ -140,6 +147,7 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
   
 
   const archiveCurrentMessage = () => {

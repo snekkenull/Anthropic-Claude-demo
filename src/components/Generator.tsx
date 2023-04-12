@@ -117,19 +117,30 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const reader = response.body.getReader();
-      let text = '';
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        text += new TextDecoder('utf-8').decode(value);
-        console.log('Partial streaming text received:', text);
+      const data = response.body;
+      if (!data) {
+        throw new Error('No data');
+      }
   
-        const jsonData = text.split('\n')[1];
-        if (!jsonData) continue;
+      const reader = data.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
   
-        const message = JSON.parse(jsonData);
-        setCurrentAssistantMessage(message.completion.trim());
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        if (value) {
+          const char = decoder.decode(value);
+          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
+            continue;
+          }
+  
+          if (char) {
+            setCurrentAssistantMessage(currentAssistantMessage() + char);
+          }
+  
+          isStick() && instantToBottom();
+        }
+        done = readerDone;
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -154,6 +165,7 @@ export default () => {
     inputRef.focus();
     isStick() && instantToBottom();
   };
+  
   
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

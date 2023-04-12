@@ -86,13 +86,14 @@ export default () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
+    const storagePassword = localStorage.getItem('pass');
   
     try {
       const userQuestion = messageList()[messageList().length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1.3';
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -118,33 +119,23 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const data = response.body;
-      if (!data) {
-        throw new Error('No data');
-      }
+      // Read streaming response
+      const reader = response.body.getReader();
+      let text = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        text += new TextDecoder('utf-8').decode(value);
   
-      const reader = data.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-  
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        if (value) {
-          const char = decoder.decode(value);
-          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
-            continue;
+        // Extract JSON data from the text/event-stream message
+        if (text.startsWith("data: ")) {
+          text = text.slice(6);
+          if (text.endsWith("\n\n")) {
+            text = text.slice(0, -2);
           }
-  
-          if (char) {
-            const updatedMessage = currentAssistantMessage() + char;
-            const parsedMessage = JSON.parse(updatedMessage);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
-          }
-          
-  
-          isStick() && instantToBottom();
+          const message = JSON.parse(text);
+          setCurrentAssistantMessage(message.completion.trim());
         }
-        done = readerDone;
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -153,22 +144,10 @@ export default () => {
       return;
     }
   
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ]);
-    }
-  
-    setCurrentAssistantMessage('');
-    setLoading(false);
-    setController(null);
-    inputRef.focus();
+    archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
   
   
   const archiveCurrentMessage = () => {

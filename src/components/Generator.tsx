@@ -83,18 +83,21 @@ export default () => {
   }
 
   const requestWithLatestMessage = async () => {
-    setLoading(true);
-    setCurrentAssistantMessage('');
-    setCurrentError(null);
-  
-    const storagePassword = localStorage.getItem('pass');
-    const userQuestion = messageList()[messageList().length - 1].content;
-    const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
-  
-    const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-    const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
-  
+    setLoading(true)
+    setCurrentAssistantMessage('')
+    setCurrentError(null)
+    const storagePassword = localStorage.getItem('pass')
     try {
+      // Create the prompt for Anthropic API
+      const userQuestion = messageList()[messageList().length - 1].content;
+      const prompt = `\n\n`;
+      // Set your Anthropic API Key
+      const apiKey =
+        import.meta.env.ANTHROPIC_API_KEY
+      const model =
+        import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
+      const abortController = new AbortController()
+      // Fetch response from Anthropic API
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -103,60 +106,41 @@ export default () => {
         },
         body: JSON.stringify({
           prompt: prompt,
-          stop_sequences: ['\n\nHuman:'],
+          stop_sequences: ['\n\n'],
           max_tokens_to_sample: 2046,
           model,
+          stream: true
         }),
+        signal: abortController.signal
       });
       if (!response.ok) {
-        const error = await response.json();
-        console.error(error.error);
-        setCurrentError(error.error);
-        throw new Error('Request failed');
+        abortController.abort()
+        const error = await response.json()
+        console.error(error.error)
+        setCurrentError(error.error)
+        throw new Error('Request failed')
       }
-  
-      const reader = response.body?.getReader();
-      let assistantResponse = '';
-  
-      let buffer = '';
-
-      async function readStream() {
-        if (!reader) return;
-        const { value, done } = await reader.read();
-        if (done) {
-          setLoading(false);
-          return;
+      response.text().then(data => {
+        console.log(data)
+        setCurrentAssistantMessage(data.trim());
+      });
+      response.addEventListener('message', e => {
+        if (e.data === 'done') {
+          abortController.abort()
+        } else {
+          const data = JSON.parse(e.data)
+          console.log(data)
+          setCurrentAssistantMessage(data.completion.trim());
         }
-  
-        const decoder = new TextDecoder();
-        const decodedValue = decoder.decode(value);
-        buffer += decodedValue;
-  
-        const separator = '\n\n';
-        let separatorIndex;
-  
-        while ((separatorIndex = buffer.indexOf(separator)) !== -1) {
-          const message = buffer.slice(0, separatorIndex);
-          buffer = buffer.slice(separatorIndex + separator.length);
-  
-          if (!message) continue;
-          const data = JSON.parse(message);
-          assistantResponse += data.completion;
-          setCurrentAssistantMessage(assistantResponse.trim());
-        }
-  
-        readStream();
-      }
-  
-      readStream();
+      });
     } catch (e) {
-      console.error(e);
-      setLoading(false);
-      setController(null);
-      return;
+      console.error(e)
+      setLoading(false)
+      setController(null)
+      return
     }
-    archiveCurrentMessage();
-    isStick() && instantToBottom();
+    archiveCurrentMessage()
+    isStick() && instantToBottom()
   }
 
   const archiveCurrentMessage = () => {

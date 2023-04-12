@@ -1,3 +1,4 @@
+// src/pages/api/generate.ts
 import { APIRoute } from 'astro';
 
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
@@ -11,15 +12,25 @@ export const post: APIRoute = async (context) => {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
+      'Accept': 'text/event-stream',
     },
     body: JSON.stringify({ ...requestBody, stream: true }),
   });
 
-  // Return a streaming response
+  if (!response.ok) {
+    const responseBody = await response.json();
+    return new Response(JSON.stringify(responseBody), {
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
   return new Response(response.body, {
     status: response.status,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'text/event-stream',
     },
   });
 };

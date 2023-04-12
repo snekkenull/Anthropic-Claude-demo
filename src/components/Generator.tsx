@@ -87,13 +87,17 @@ export default () => {
     setCurrentAssistantMessage('');
     setCurrentError(null);
     const storagePassword = localStorage.getItem('pass');
+  
     try {
+      // Create the prompt for Anthropic API
       const userQuestion = messageList()[messageList().length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
+      // Set your Anthropic API Key
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
+      // Fetch response from Anthropic API
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -105,40 +109,38 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
-          stream: true,
         }),
       });
   
       if (!response.ok) {
         const error = await response.json();
-        console.error(error.error);
+        console.error('API response error:', error.error);
         setCurrentError(error.error);
         throw new Error('Request failed');
       }
-  
+      console.log('API response received:', response);
+      // Read streaming response
       const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let data = '';
-    
+      let text = '';
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-    
-        data += decoder.decode(value);
-        console.log('Received data:', data);
-
-        const message = JSON.parse(data);
+        text += new TextDecoder('utf-8').decode(value);
+        console.log('Partial streaming text received:', text);
+        const message = JSON.parse(text);
         setCurrentAssistantMessage(message.completion.trim());
       }
     } catch (e) {
-      console.error(e);
+      console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
       setController(null);
       return;
     }
+  
     archiveCurrentMessage();
     isStick() && instantToBottom();
-  }
+  };
+  
 
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

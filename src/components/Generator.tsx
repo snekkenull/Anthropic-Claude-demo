@@ -136,15 +136,6 @@ export default () => {
   
         const message = JSON.parse(jsonData);
         setCurrentAssistantMessage(message.completion.trim());
-
-        // Update the message list with the AI response immediately
-        setMessageList([
-        ...messageList(),
-          {
-            role: 'assistant',
-            content: message.completion.trim(),
-          },
-        ]);
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -153,7 +144,7 @@ export default () => {
       return;
     }
   
-    //archiveCurrentMessage();
+    archiveCurrentMessage();
     isStick() && instantToBottom();
   };
   
@@ -161,19 +152,20 @@ export default () => {
 
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
+      setMessageList((prevMessages) => [
+        ...prevMessages,
         {
           role: 'assistant',
           content: currentAssistantMessage(),
         },
-      ])
-      setCurrentAssistantMessage('')
-      setLoading(false)
-      setController(null)
-      inputRef.focus()
+      ]);
+      setCurrentAssistantMessage('');
+      setLoading(false);
+      setController(null);
+      inputRef.focus();
     }
-  }
+  };
+  
 
   const clear = () => {
     inputRef.value = ''

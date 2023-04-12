@@ -18,11 +18,20 @@ import 'highlight.js/styles/atom-one-dark.css'
 </Layout>
 
 <script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
   async function checkCurrentAuth() {
-    const sitePassword = '<%= import.meta.env.SITE_PASSWORD %>';
-    if (!sitePassword) return;
-  
-    const password = localStorage.getItem('pass')
+    const password = getCookie('pass')
+
+    if (!password) {
+      window.location.href = '/password'
+      return
+    }
+
     const response = await fetch('/api/auth', {
       method: 'POST',
       headers: {
@@ -32,9 +41,12 @@ import 'highlight.js/styles/atom-one-dark.css'
         pass: password,
       }),
     })
+
     const responseJson = await response.json()
+
     if (responseJson.code !== 0)
       window.location.href = '/password'
   }
+
   checkCurrentAuth()
-  </script>
+</script>

@@ -135,8 +135,11 @@ export default () => {
           }
   
           if (char) {
-            setCurrentAssistantMessage(currentAssistantMessage() + char);
+            const updatedMessage = currentAssistantMessage() + char;
+            const parsedMessage = JSON.parse(updatedMessage);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
           }
+          
   
           isStick() && instantToBottom();
         }

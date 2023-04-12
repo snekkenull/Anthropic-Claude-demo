@@ -86,7 +86,6 @@ export default () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-    const storagePassword = localStorage.getItem('pass');
   
     try {
       const userQuestion = messageList()[messageList().length - 1].content;
@@ -106,7 +105,6 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
-          stream: true,
         }),
       });
   
@@ -119,24 +117,32 @@ export default () => {
   
       console.log('API response received:', response);
   
-      // Read streaming response
-      const reader = response.body.getReader();
-      let text = '';
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        text += new TextDecoder('utf-8').decode(value);
+      const data = response.body;
+      if (!data) {
+        throw new Error('No data');
+      }
   
-        if (text.endsWith('\n\n')) {
-          const lines = text.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const messageText = line.slice(6);
-              const message = JSON.parse(messageText);
-              setCurrentAssistantMessage((prev) => prev + message.completion.trim());
-            }
+      const reader = data.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+  
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        if (value) {
+          const char = decoder.decode(value);
+          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
+            continue;
           }
+  
+          if (char) {
+            const updatedMessage = currentAssistantMessage() + char;
+            const parsedMessage = JSON.parse(updatedMessage);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
+          }
+  
+          isStick() && instantToBottom();
         }
+        done = readerDone;
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -145,9 +151,23 @@ export default () => {
       return;
     }
   
-    archiveCurrentMessage();
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ]);
+    }
+  
+    setCurrentAssistantMessage('');
+    setLoading(false);
+    setController(null);
+    inputRef.focus();
     isStick() && instantToBottom();
   };
+  
   
   
   const archiveCurrentMessage = () => {

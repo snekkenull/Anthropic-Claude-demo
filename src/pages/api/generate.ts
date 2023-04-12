@@ -20,6 +20,7 @@ export const post: APIRoute = async (context) => {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
+      'Accept': 'text/event-stream', // Add this line
     },
     body: JSON.stringify({ ...requestBody, stream: true }),
     onmessage: (ev) => {

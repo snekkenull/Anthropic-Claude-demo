@@ -149,6 +149,38 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   }
+  
+  const onmessage = async (event: MessageEvent) => {
+    const message = event.data.trim();
+    if (message.startsWith("data: ")) {
+      const jsonString = message.slice(6);
+      try {
+        const data = JSON.parse(jsonString);
+        setCurrentAssistantMessage(data.completion.trim());
+      } catch (error) {
+        console.error("JSON parse error:", error);
+      }
+    }
+  }
+  
+  async function readStream() {
+    if (!reader) return;
+    const { value, done } = await reader.read();
+    if (done) {
+      setLoading(false);
+      return;
+    }
+  
+    const decoder = new TextDecoder();
+    const decodedValue = decoder.decode(value);
+    const messages = decodedValue.split('\n\n');
+    for (const message of messages) {
+      if (!message) continue;
+      onmessage(new MessageEvent('message', { data: message }));
+    }
+  
+    readStream();
+  }
 
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

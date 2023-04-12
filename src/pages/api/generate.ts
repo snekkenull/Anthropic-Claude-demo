@@ -1,50 +1,25 @@
 import { APIRoute } from 'astro';
-import fetchStream from 'fetch-readablestream';
 
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
 const apiUrl = 'https://api.anthropic.com/v1/complete';
 
-const DONE_MESSAGE = 'DONE';
-
 export const post: APIRoute = async (context) => {
   const requestBody = await context.request.json();
 
-  const response = await fetchStream(`${anthropicAPIUrl}/v1/complete?stream=true`, {
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
     },
-    body: JSON.stringify(requestBody),
-  });
-  
-
-  const response = new ReadableStream({
-    async start(controller) {
-      response.body
-      .pipeThrough(new TextDecoderStream())
-      .pipeTo(
-        new WritableStream({
-          write(chunk) {
-            console.log('Received message:', chunk);
-            if (chunk === DONE_MESSAGE) {
-              controller.close();
-              return;
-            }
-            controller.enqueue(chunk);
-          },
-          close() {
-            controller.close();
-          },
-        }),
-      );
-    },
+    body: JSON.stringify({ ...requestBody, stream: true }),
   });
 
-  return new Response(response, {
+  // Return a streaming response
+  return new Response(response.body, {
+    status: response.status,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
     },
   });
 };

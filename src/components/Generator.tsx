@@ -117,14 +117,14 @@ export default () => {
       }
   
       const reader = response.body.getReader();
-      let text = '';
-  
+      const decoder = new TextDecoder('utf-8');
+      let data = '';
+    
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const decodedValue = new TextDecoder('utf-8').decode(value);
-        console.log('Received value:', decodedValue);
-        text += decodedValue;
+    
+        data += decoder.decode(value);
       
         const message = JSON.parse(text);
         setCurrentAssistantMessage(message.completion.trim());

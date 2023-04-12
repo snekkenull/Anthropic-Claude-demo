@@ -127,14 +127,15 @@ export default () => {
         if (done) break;
         text += new TextDecoder('utf-8').decode(value);
   
-        // Extract JSON data from the text/event-stream message
-        if (text.startsWith("data: ")) {
-          text = text.slice(6);
-          if (text.endsWith("\n\n")) {
-            text = text.slice(0, -2);
+        if (text.endsWith('\n\n')) {
+          const lines = text.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const messageText = line.slice(6);
+              const message = JSON.parse(messageText);
+              setCurrentAssistantMessage((prev) => prev + message.completion.trim());
+            }
           }
-          const message = JSON.parse(text);
-          setCurrentAssistantMessage(message.completion.trim());
         }
       }
     } catch (e) {
@@ -147,7 +148,6 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
-  
   
   
   const archiveCurrentMessage = () => {

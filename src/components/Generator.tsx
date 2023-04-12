@@ -90,7 +90,7 @@ export default () => {
     try {
       // Create the prompt for Anthropic API
       const userQuestion = messageList()[messageList().length - 1].content;
-      const prompt = `\n\n`;
+      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
       // Set your Anthropic API Key
       const apiKey =
         import.meta.env.ANTHROPIC_API_KEY
@@ -120,8 +120,15 @@ export default () => {
         setCurrentError(error.error)
         throw new Error('Request failed')
       }
-      response.text().then(data => {
-        console.log(data)
+      response.body.getReader().read().then(({ value, done }) => {
+        if (done) {
+          abortController.abort();
+          return;
+        }
+      
+        const textDecoder = new TextDecoder();
+        const data = textDecoder.decode(value);
+        console.log(data);
         setCurrentAssistantMessage(data.trim());
       });
       response.addEventListener('message', e => {

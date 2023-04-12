@@ -82,7 +82,7 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
-  const requestWithLatestMessage = async () => {
+  const requestWithLatestMessage = async() => {
     setLoading(true)
     setCurrentAssistantMessage('')
     setCurrentError(null)
@@ -91,12 +91,11 @@ export default () => {
       // Create the prompt for Anthropic API
       const userQuestion = messageList()[messageList().length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+  
       // Set your Anthropic API Key
-      const apiKey =
-        import.meta.env.ANTHROPIC_API_KEY
-      const model =
-        import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
-      const abortController = new AbortController()
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
+  
       // Fetch response from Anthropic API
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -106,40 +105,25 @@ export default () => {
         },
         body: JSON.stringify({
           prompt: prompt,
-          stop_sequences: ['\n\n'],
+          stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
-          stream: true
         }),
-        signal: abortController.signal
       });
       if (!response.ok) {
-        abortController.abort()
         const error = await response.json()
         console.error(error.error)
         setCurrentError(error.error)
         throw new Error('Request failed')
       }
-      response.body.getReader().read().then(({ value, done }) => {
-        if (done) {
-          abortController.abort();
-          return;
-        }
-      
-        const textDecoder = new TextDecoder();
-        const data = textDecoder.decode(value);
-        console.log(data);
-        setCurrentAssistantMessage(data.trim());
-      });
-      response.addEventListener('message', e => {
-        if (e.data === 'done') {
-          abortController.abort()
-        } else {
-          const data = JSON.parse(e.data)
-          console.log(data)
-          setCurrentAssistantMessage(data.completion.trim());
-        }
-      });
+      const data = await response.json();
+      console.log('Response data:', data);
+      if (!data) throw new Error('No data');
+  
+      // Extract the generated text from the response
+      setCurrentAssistantMessage(data.completion.trim());
+  
+
     } catch (e) {
       console.error(e)
       setLoading(false)

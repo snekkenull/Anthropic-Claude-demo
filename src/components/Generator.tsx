@@ -86,18 +86,16 @@ export default () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-    const storagePassword = localStorage.getItem('pass');
+    let localAssistantMessage = '';
+    let localMessageList = messageList();
   
     try {
-      // Create the prompt for Anthropic API
-      const userQuestion = messageList()[messageList().length - 1].content;
+      const userQuestion = localMessageList[localMessageList.length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
-      // Set your Anthropic API Key
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-      // Fetch response from Anthropic API
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -121,7 +119,6 @@ export default () => {
   
       console.log('API response received:', response);
   
-      // Read streaming response
       const reader = response.body.getReader();
       let text = '';
       while (true) {
@@ -130,12 +127,11 @@ export default () => {
         text += new TextDecoder('utf-8').decode(value);
         console.log('Partial streaming text received:', text);
   
-        // Extract JSON data from the text/event-stream message
         const jsonData = text.split('\n')[1];
         if (!jsonData) continue;
   
         const message = JSON.parse(jsonData);
-        setCurrentAssistantMessage(message.completion.trim());
+        localAssistantMessage = message.completion.trim();
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -144,28 +140,36 @@ export default () => {
       return;
     }
   
-    archiveCurrentMessage();
+    if (localAssistantMessage) {
+      localMessageList.push({
+        role: 'assistant',
+        content: localAssistantMessage,
+      });
+      setMessageList(localMessageList);
+    }
+  
+    setCurrentAssistantMessage('');
+    setLoading(false);
+    setController(null);
+    inputRef.focus();
     isStick() && instantToBottom();
   };
-  
-  
 
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
-      setMessageList((prevMessages) => [
-        ...prevMessages,
+      setMessageList([
+        ...messageList(),
         {
           role: 'assistant',
           content: currentAssistantMessage(),
         },
-      ]);
-      setCurrentAssistantMessage('');
-      setLoading(false);
-      setController(null);
-      inputRef.focus();
+      ])
+      setCurrentAssistantMessage('')
+      setLoading(false)
+      setController(null)
+      inputRef.focus()
     }
-  };
-  
+  }
 
   const clear = () => {
     inputRef.value = ''

@@ -14,7 +14,11 @@ export const post: APIRoute = async (context) => {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
     },
-    body: JSON.stringify(requestBody),
+    //body: JSON.stringify(requestBody),
+    body: JSON.stringify({
+      ...requestBody,
+      stream: true
+    }),
   });
 
   console.log('Received response from Anthropic API:', response);

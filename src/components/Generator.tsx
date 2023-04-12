@@ -92,7 +92,7 @@ export default () => {
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1.3';
   
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -105,6 +105,7 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
+          stream: true,
         }),
       });
   

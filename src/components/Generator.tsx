@@ -118,6 +118,8 @@ export default () => {
       const reader = response.body?.getReader();
       let assistantResponse = '';
   
+      let buffer = '';
+
       async function readStream() {
         if (!reader) return;
         const { value, done } = await reader.read();
@@ -128,8 +130,15 @@ export default () => {
   
         const decoder = new TextDecoder();
         const decodedValue = decoder.decode(value);
-        const messages = decodedValue.split('\n\n');
-        for (const message of messages) {
+        buffer += decodedValue;
+  
+        const separator = '\n\n';
+        let separatorIndex;
+  
+        while ((separatorIndex = buffer.indexOf(separator)) !== -1) {
+          const message = buffer.slice(0, separatorIndex);
+          buffer = buffer.slice(separatorIndex + separator.length);
+  
           if (!message) continue;
           const data = JSON.parse(message);
           assistantResponse += data.completion;
@@ -148,38 +157,6 @@ export default () => {
     }
     archiveCurrentMessage();
     isStick() && instantToBottom();
-  }
-  
-  const onmessage = async (event: MessageEvent) => {
-    const message = event.data.trim();
-    if (message.startsWith("data: ")) {
-      const jsonString = message.slice(6);
-      try {
-        const data = JSON.parse(jsonString);
-        setCurrentAssistantMessage(data.completion.trim());
-      } catch (error) {
-        console.error("JSON parse error:", error);
-      }
-    }
-  }
-  
-  async function readStream() {
-    if (!reader) return;
-    const { value, done } = await reader.read();
-    if (done) {
-      setLoading(false);
-      return;
-    }
-  
-    const decoder = new TextDecoder();
-    const decodedValue = decoder.decode(value);
-    const messages = decodedValue.split('\n\n');
-    for (const message of messages) {
-      if (!message) continue;
-      onmessage(new MessageEvent('message', { data: message }));
-    }
-  
-    readStream();
   }
 
   const archiveCurrentMessage = () => {

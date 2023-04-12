@@ -5,7 +5,6 @@ const apiUrl = 'https://api.anthropic.com/v1/complete';
 
 import { fetchEventSource } from '@/utils/api';
 
-
 export const post: APIRoute = async (context) => {
   const requestBody = await context.request.json();
   const responseHeaders = new Headers({ 'Content-Type': 'text/event-stream' });
@@ -20,7 +19,6 @@ export const post: APIRoute = async (context) => {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': apiKey,
-      'Accept': 'text/event-stream', // Add this line
     },
     body: JSON.stringify({ ...requestBody, stream: true }),
     onmessage: (ev) => {

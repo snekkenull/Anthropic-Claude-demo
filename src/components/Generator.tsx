@@ -126,7 +126,7 @@ export default () => {
     
         data += decoder.decode(value);
       
-        const message = JSON.parse(text);
+        const message = JSON.parse(data);
         setCurrentAssistantMessage(message.completion.trim());
       }
     } catch (e) {

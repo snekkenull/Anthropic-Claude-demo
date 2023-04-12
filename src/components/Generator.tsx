@@ -122,8 +122,10 @@ export default () => {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        text += new TextDecoder('utf-8').decode(value);
-  
+        const decodedValue = new TextDecoder('utf-8').decode(value);
+        console.log('Received value:', decodedValue);
+        text += decodedValue;
+      
         const message = JSON.parse(text);
         setCurrentAssistantMessage(message.completion.trim());
       }

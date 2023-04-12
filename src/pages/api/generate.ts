@@ -21,6 +21,7 @@ export const post: APIRoute = async (context) => {
   const response = new ReadableStream({
     async start(controller) {
       eventSource.onmessage = (event) => {
+        console.log('Received message:', event.data);
         if (event.data === DONE_MESSAGE) {
           controller.close();
           eventSource.close();

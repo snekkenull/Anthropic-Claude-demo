@@ -82,21 +82,18 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
-  const requestWithLatestMessage = async() => {
-    setLoading(true)
-    setCurrentAssistantMessage('')
-    setCurrentError(null)
-    const storagePassword = localStorage.getItem('pass')
+  const requestWithLatestMessage = async () => {
+    setLoading(true);
+    setCurrentAssistantMessage('');
+    setCurrentError(null);
+    const storagePassword = localStorage.getItem('pass');
     try {
-      // Create the prompt for Anthropic API
       const userQuestion = messageList()[messageList().length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
-      // Set your Anthropic API Key
-      const apiKey = import.meta.env.ANTHROPIC_API_KEY
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1'
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-      // Fetch response from Anthropic API
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -108,30 +105,36 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
+          stream: true,
         }),
       });
+  
       if (!response.ok) {
-        const error = await response.json()
-        console.error(error.error)
-        setCurrentError(error.error)
-        throw new Error('Request failed')
+        const error = await response.json();
+        console.error(error.error);
+        setCurrentError(error.error);
+        throw new Error('Request failed');
       }
-      const data = await response.json();
-      console.log('Response data:', data);
-      if (!data) throw new Error('No data');
   
-      // Extract the generated text from the response
-      setCurrentAssistantMessage(data.completion.trim());
+      const reader = response.body.getReader();
+      let text = '';
   
-
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        text += new TextDecoder('utf-8').decode(value);
+  
+        const message = JSON.parse(text);
+        setCurrentAssistantMessage(message.completion.trim());
+      }
     } catch (e) {
-      console.error(e)
-      setLoading(false)
-      setController(null)
-      return
+      console.error(e);
+      setLoading(false);
+      setController(null);
+      return;
     }
-    archiveCurrentMessage()
-    isStick() && instantToBottom()
+    archiveCurrentMessage();
+    isStick() && instantToBottom();
   }
 
   const archiveCurrentMessage = () => {

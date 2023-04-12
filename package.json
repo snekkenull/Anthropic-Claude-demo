@@ -22,6 +22,7 @@
     "@unocss/reset": "^0.50.1",
     "astro": "^2.0.15",
     "eslint": "^8.36.0",
+    "event-source-polyfill": "^1.0.31",
     "eventsource-parser": "^0.1.0",
     "highlight.js": "^11.7.0",
     "js-sha256": "^0.9.0",

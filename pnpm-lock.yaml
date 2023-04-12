@@ -25,6 +25,9 @@ dependencies:
   eslint:
     specifier: ^8.36.0
     version: 8.36.0
+  event-source-polyfill:
+    specifier: ^1.0.31
+    version: 1.0.31
   eventsource-parser:
     specifier: ^0.1.0
     version: 0.1.0
@@ -4196,6 +4199,10 @@ packages:
   /etag@1.8.1:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /event-source-polyfill@1.0.31:
+    resolution: {integrity: sha512-4IJSItgS/41IxN5UVAVuAyczwZF7ZIEsM1XAoUzIHA6A+xzusEZUutdXz2Nr+MQPLxfTiCvqE79/C8HT8fKFvA==}
     dev: false
 
   /events@3.3.0:

@@ -86,11 +86,9 @@ export default () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-    let localAssistantMessage = '';
-    let localMessageList = messageList();
   
     try {
-      const userQuestion = localMessageList[localMessageList.length - 1].content;
+      const userQuestion = messageList()[messageList().length - 1].content;
       const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
@@ -131,7 +129,7 @@ export default () => {
         if (!jsonData) continue;
   
         const message = JSON.parse(jsonData);
-        localAssistantMessage = message.completion.trim();
+        setCurrentAssistantMessage(message.completion.trim());
       }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
@@ -140,12 +138,14 @@ export default () => {
       return;
     }
   
-    if (localAssistantMessage) {
-      localMessageList.push({
-        role: 'assistant',
-        content: localAssistantMessage,
-      });
-      setMessageList(localMessageList);
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ]);
     }
   
     setCurrentAssistantMessage('');
@@ -154,7 +154,7 @@ export default () => {
     inputRef.focus();
     isStick() && instantToBottom();
   };
-
+  
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

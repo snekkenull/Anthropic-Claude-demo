@@ -5,8 +5,7 @@ import MessageItem from './MessageItem'
 import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
-import { createParser } from 'eventsource-parser'
-import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser'
+
 
 export default () => {
   let inputRef: HTMLTextAreaElement
@@ -88,46 +87,84 @@ export default () => {
     setCurrentAssistantMessage('');
     setCurrentError(null);
   
-    const storagePassword = localStorage.getItem('pass');
-    const requestMessageList = [...messageList()];
+    try {
+      const userQuestion = messageList()[messageList().length - 1].content;
+      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
   
-    if (currentSystemRoleSettings()) {
-      requestMessageList.unshift({
-        role: 'system',
-        content: currentSystemRoleSettings(),
-      });
-    }
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
+      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-    const timestamp = Date.now();
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        messages: requestMessageList,
-        time: timestamp,
-        pass: storagePassword,
-        sign: await generateSignature({
-          t: timestamp,
-          m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          stop_sequences: ['\n\nHuman:'],
+          max_tokens_to_sample: 2046,
+          model,
+          stream: true,
         }),
-      }),
-    });
+      });
   
-    if (!response.ok) {
-      const error = await response.json();
-      console.error(error.error);
-      setCurrentError(error.error);
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('API response error:', error.error);
+        setCurrentError(error.error);
+        throw new Error('Request failed');
+      }
+  
+      console.log('API response received:', response);
+  
+      const data = response.body;
+      if (!data) {
+        throw new Error('No data');
+      }
+  
+      const reader = data.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+    
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        if (value) {
+          const jsonStr = decoder.decode(value);
+          try {
+            const parsedMessage = JSON.parse(jsonStr);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
+          } catch (e) {
+            console.error('Error parsing JSON:', e);
+          }
+    
+          isStick() && instantToBottom();
+        }
+        done = readerDone;
+      }    
+    } catch (e) {
+      console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
+      setController(null);
       return;
     }
   
-    const data = await response.json();
-    const text = data.completion;
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ]);
+    }
   
-    setCurrentAssistantMessage(currentAssistantMessage() + text);
-    archiveCurrentMessage();
+    setCurrentAssistantMessage('');
+    setLoading(false);
+    setController(null);
+    inputRef.focus();
     isStick() && instantToBottom();
   };
-  
   
   
   

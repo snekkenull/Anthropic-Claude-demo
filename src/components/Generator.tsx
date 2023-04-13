@@ -95,7 +95,7 @@ export default () => {
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-      const requestOptions = {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,13 +105,9 @@ export default () => {
           prompt: prompt,
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
-          stream: true, // Add the stream parameter to enable streaming
           model,
         }),
-      };
-  
-      // Make the request using the fetch API
-      const response = await fetch('/api/generate', requestOptions);
+      });
   
       if (!response.ok) {
         const error = await response.json();
@@ -122,32 +118,59 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const reader = response.body.getReader();
+      const data = response.body;
+      if (!data) {
+        throw new Error('No data');
+      }
+  
+      const reader = data.getReader();
       const decoder = new TextDecoder('utf-8');
+      let done = false;
+      let jsonBuffer = '';
   
-      reader.read().then(function processText({ done, value }) {
-        if (done) {
-          console.log('Stream complete');
-          archiveCurrentMessage();
-          setLoading(false);
-          return;
-        }
-  
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
         if (value) {
           const char = decoder.decode(value, { stream: true });
-          setCurrentAssistantMessage((prevMessage) => prevMessage + char);
-          isStick() && instantToBottom();
+          jsonBuffer += char;
+          
+          // Check for a valid JSON object
+          try {
+            const parsedMessage = JSON.parse(jsonBuffer);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
+            jsonBuffer = '';
+          } catch (e) {
+            // Continue reading if the JSON object is incomplete
+          }
         }
+        done = readerDone;
+      }
   
-        reader.read().then(processText);
-      });
+      isStick() && instantToBottom();
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
       setController(null);
       return;
     }
+  
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ]);
+    }
+  
+    setCurrentAssistantMessage('');
+    setLoading(false);
+    setController(null);
+    inputRef.focus();
+    isStick() && instantToBottom();
   };
+  
   
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

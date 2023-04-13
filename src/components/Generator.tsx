@@ -103,8 +103,9 @@ export default () => {
         body: JSON.stringify({
           prompt: prompt,
           stop_sequences: ['\n\nHuman:'],
-          max_tokens_to_sample: 2046,
+          max_tokens_to_sample: 1024,
           model,
+          stream: true,
         }),
       });
   

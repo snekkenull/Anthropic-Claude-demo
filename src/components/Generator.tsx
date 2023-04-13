@@ -105,7 +105,6 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
-          stream: true,
         }),
       });
   
@@ -126,28 +125,22 @@ export default () => {
       const reader = data.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
-    
+  
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         if (value) {
-          const rawData = decoder.decode(value);
-          const eventSeparatorIndex = rawData.indexOf('\n\n');
-          
-          if (eventSeparatorIndex !== -1) {
-            const eventData = rawData.slice(0, eventSeparatorIndex);
-            
-            // Assuming the data line starts with "data: "
-            const jsonStr = eventData.slice(6); // Skip the "data: " part
-            
-            try {
-              const parsedMessage = JSON.parse(jsonStr);
-              setCurrentAssistantMessage(parsedMessage.completion.trim());
-            } catch (e) {
-              console.error('Error parsing JSON:', e);
-            }
-            
-            isStick() && instantToBottom();
+          const char = decoder.decode(value);
+          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
+            continue;
           }
+  
+          if (char) {
+            const updatedMessage = currentAssistantMessage() + char;
+            const parsedMessage = JSON.parse(updatedMessage);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
+          }
+  
+          isStick() && instantToBottom();
         }
         done = readerDone;
       }
@@ -174,10 +167,7 @@ export default () => {
     inputRef.focus();
     isStick() && instantToBottom();
   };
-  
-  
-  
-  
+    
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

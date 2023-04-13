@@ -130,18 +130,27 @@ export default () => {
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         if (value) {
-          const jsonStr = decoder.decode(value);
-          try {
-            const parsedMessage = JSON.parse(jsonStr);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
-          } catch (e) {
-            console.error('Error parsing JSON:', e);
+          const rawData = decoder.decode(value);
+          const eventSeparatorIndex = rawData.indexOf('\n\n');
+          
+          if (eventSeparatorIndex !== -1) {
+            const eventData = rawData.slice(0, eventSeparatorIndex);
+            
+            // Assuming the data line starts with "data: "
+            const jsonStr = eventData.slice(6); // Skip the "data: " part
+            
+            try {
+              const parsedMessage = JSON.parse(jsonStr);
+              setCurrentAssistantMessage(parsedMessage.completion.trim());
+            } catch (e) {
+              console.error('Error parsing JSON:', e);
+            }
+            
+            isStick() && instantToBottom();
           }
-    
-          isStick() && instantToBottom();
         }
         done = readerDone;
-      }    
+      }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);

@@ -95,7 +95,7 @@ export default () => {
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-      const response = await fetch('/api/generate', {
+      const requestOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,9 +105,13 @@ export default () => {
           prompt: prompt,
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
+          stream: true, // Add the stream parameter to enable streaming
           model,
         }),
-      });
+      };
+  
+      // Make the request using the fetch API
+      const response = await fetch('/api/generate', requestOptions);
   
       if (!response.ok) {
         const error = await response.json();
@@ -118,56 +122,31 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const parsedResponse = parseAnthropicStream(response);
-      const data = parsedResponse.body;
-      if (!data) {
-        throw new Error('No data');
-      }
-  
-      const reader = data.getReader();
+      const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      let done = false;
   
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
+      reader.read().then(function processText({ done, value }) {
+        if (done) {
+          console.log('Stream complete');
+          archiveCurrentMessage();
+          setLoading(false);
+          return;
+        }
+  
         if (value) {
-          const char = decoder.decode(value);
-          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
-            continue;
-          }
-  
-          if (char) {
-            const updatedMessage = currentAssistantMessage() + char;
-            const parsedMessage = JSON.parse(updatedMessage);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
-          }
-  
+          const char = decoder.decode(value, { stream: true });
+          setCurrentAssistantMessage((prevMessage) => prevMessage + char);
           isStick() && instantToBottom();
         }
-        done = readerDone;
-      }
+  
+        reader.read().then(processText);
+      });
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
       setController(null);
       return;
     }
-  
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ]);
-    }
-  
-    setCurrentAssistantMessage('');
-    setLoading(false);
-    setController(null);
-    inputRef.focus();
-    isStick() && instantToBottom();
   };
   
   const archiveCurrentMessage = () => {

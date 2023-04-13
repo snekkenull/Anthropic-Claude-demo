@@ -1,5 +1,4 @@
 import { APIRoute } from 'astro';
-import { parseAnthropicStream } from '@/utils/anthropicAPI';
 
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
 const apiUrl = 'https://api.anthropic.com/v1/complete';
@@ -19,5 +18,44 @@ export const post: APIRoute = async (context) => {
   });
 
   console.log('Received response from Anthropic API:', response);
-  return parseAnthropicStream(response); 
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('API response error:', error);
+    return new Response(JSON.stringify(error), {
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  const responseStream = new ReadableStream({
+    async start(controller) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+
+      reader.read().then(function processText({ done, value }) {
+        if (done) {
+          console.log('Stream complete');
+          controller.close();
+          return;
+        }
+
+        if (value) {
+          const char = decoder.decode(value, { stream: true });
+          controller.enqueue(char);
+        }
+
+        reader.read().then(processText);
+      });
+    },
+  });
+
+  return new Response(responseStream, {
+    status: response.status,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 };

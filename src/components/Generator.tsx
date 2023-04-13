@@ -133,17 +133,16 @@ export default () => {
           if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
             continue;
           }
-  
+      
           if (char) {
-            const updatedMessage = currentAssistantMessage() + char;
-            const parsedMessage = JSON.parse(updatedMessage);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
+            setCurrentAssistantMessage(currentAssistantMessage() + char);
           }
-  
+      
           isStick() && instantToBottom();
         }
         done = readerDone;
       }
+      
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);

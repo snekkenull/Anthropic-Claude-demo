@@ -103,9 +103,8 @@ export default () => {
         body: JSON.stringify({
           prompt: prompt,
           stop_sequences: ['\n\nHuman:'],
-          max_tokens_to_sample: 1024,
+          max_tokens_to_sample: 2046,
           model,
-          stream: true,
         }),
       });
   
@@ -118,7 +117,8 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const data = response.body;
+      const parsedResponse = parseAnthropicStream(response);
+      const data = parsedResponse.body;
       if (!data) {
         throw new Error('No data');
       }
@@ -134,16 +134,17 @@ export default () => {
           if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
             continue;
           }
-      
+  
           if (char) {
-            setCurrentAssistantMessage(currentAssistantMessage() + char);
+            const updatedMessage = currentAssistantMessage() + char;
+            const parsedMessage = JSON.parse(updatedMessage);
+            setCurrentAssistantMessage(parsedMessage.completion.trim());
           }
-      
+  
           isStick() && instantToBottom();
         }
         done = readerDone;
       }
-      
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
@@ -167,7 +168,7 @@ export default () => {
     inputRef.focus();
     isStick() && instantToBottom();
   };
-    
+  
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

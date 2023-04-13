@@ -5,7 +5,8 @@ import MessageItem from './MessageItem'
 import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
-
+import { createParser } from 'eventsource-parser'
+import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser'
 
 export default () => {
   let inputRef: HTMLTextAreaElement
@@ -122,27 +123,30 @@ export default () => {
         async start(controller) {
           const encoder = new TextEncoder();
           const decoder = new TextDecoder();
-  
-          const streamParser = (event) => {
-            try {
-              const json = JSON.parse(event.data);
-              const text = json.completion;
-              const queue = encoder.encode(text);
-              controller.enqueue(queue);
-            } catch (e) {
-              controller.error(e);
+      
+          const streamParser = (event: ParsedEvent | ReconnectInterval) => {
+            if (event.type === 'event') {
+              try {
+                const json = JSON.parse(event.data);
+                const text = json.completion;
+                const queue = encoder.encode(text);
+                controller.enqueue(queue);
+              } catch (e) {
+                controller.error(e);
+              }
             }
           };
-  
+      
           const parser = createParser(streamParser);
-  
+      
           for await (const chunk of response.body) {
             parser.feed(decoder.decode(chunk));
           }
-  
+      
           controller.close();
         },
       });
+      
   
       const streamResponse = new Response(stream);
   

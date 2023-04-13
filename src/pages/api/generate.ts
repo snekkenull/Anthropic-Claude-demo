@@ -46,7 +46,10 @@ export const post: APIRoute = async (context) => {
 
         if (value) {
           const char = decoder.decode(value, { stream: true });
-          controller.enqueue(char);
+          if (char.startsWith("data:")) {
+            const jsonResponse = char.slice(5).trim();
+            controller.enqueue(jsonResponse);
+          }
         }
 
         reader.read().then(processText).catch((error) => {

@@ -105,6 +105,7 @@ export default () => {
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
           model,
+          stream: true,
         }),
       });
   
@@ -117,12 +118,35 @@ export default () => {
   
       console.log('API response received:', response);
   
-      const data = response.body;
-      if (!data) {
-        throw new Error('No data');
-      }
+      const stream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          const decoder = new TextDecoder();
   
-      const reader = data.getReader();
+          const streamParser = (event) => {
+            try {
+              const json = JSON.parse(event.data);
+              const text = json.completion;
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+            } catch (e) {
+              controller.error(e);
+            }
+          };
+  
+          const parser = createParser(streamParser);
+  
+          for await (const chunk of response.body) {
+            parser.feed(decoder.decode(chunk));
+          }
+  
+          controller.close();
+        },
+      });
+  
+      const streamResponse = new Response(stream);
+  
+      const reader = streamResponse.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
   
@@ -135,9 +159,7 @@ export default () => {
           }
   
           if (char) {
-            const updatedMessage = currentAssistantMessage() + char;
-            const parsedMessage = JSON.parse(updatedMessage);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
+            setCurrentAssistantMessage(currentAssistantMessage() + char);
           }
   
           isStick() && instantToBottom();
@@ -167,6 +189,7 @@ export default () => {
     inputRef.focus();
     isStick() && instantToBottom();
   };
+  
   
   
   

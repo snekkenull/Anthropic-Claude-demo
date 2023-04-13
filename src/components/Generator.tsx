@@ -95,7 +95,7 @@ export default () => {
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
   
-      const requestOptions = {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,13 +105,9 @@ export default () => {
           prompt: prompt,
           stop_sequences: ['\n\nHuman:'],
           max_tokens_to_sample: 2046,
-          stream: true, // Add the stream parameter to enable streaming
           model,
         }),
-      };
-  
-      // Make the request using the fetch API
-      const response = await fetch('/api/generate', requestOptions);
+      });
   
       if (!response.ok) {
         const error = await response.json();
@@ -124,30 +120,55 @@ export default () => {
   
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-  
-      reader.read().then(function processText({ done, value }) {
-        if (done) {
-          console.log('Stream complete');
-          archiveCurrentMessage();
-          setLoading(false);
-          return;
-        }
-  
+      let done = false;
+      let jsonBuffer = '';
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
         if (value) {
-          const char = decoder.decode(value, { stream: true });
-          setCurrentAssistantMessage((prevMessage) => prevMessage + char);
+          const chunk = decoder.decode(value, { stream: true });
+          jsonBuffer += chunk;
+
+          const lastIndex = jsonBuffer.lastIndexOf('\n');
+          if (lastIndex >= 0) {
+            const jsonLines = jsonBuffer.slice(0, lastIndex + 1).split('\n');
+            jsonBuffer = jsonBuffer.slice(lastIndex + 1);
+
+            for (const line of jsonLines) {
+              if (line.trim()) {
+                const parsedMessage = JSON.parse(line);
+                setCurrentAssistantMessage(parsedMessage.completion.trim());
+              }
+            }
+          }
           isStick() && instantToBottom();
         }
-  
-        reader.read().then(processText);
-      });
+        done = readerDone;
+      }
     } catch (e) {
       console.error('Error in requestWithLatestMessage:', e);
       setLoading(false);
       setController(null);
       return;
     }
+  
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ]);
+    }
+  
+    setCurrentAssistantMessage('');
+    setLoading(false);
+    setController(null);
+    inputRef.focus();
+    isStick() && instantToBottom();
   };
+
   
   
   const archiveCurrentMessage = () => {

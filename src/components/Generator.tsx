@@ -88,111 +88,46 @@ export default () => {
     setCurrentAssistantMessage('');
     setCurrentError(null);
   
-    try {
-      const userQuestion = messageList()[messageList().length - 1].content;
-      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+    const storagePassword = localStorage.getItem('pass');
+    const requestMessageList = [...messageList()];
   
-      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
+    if (currentSystemRoleSettings()) {
+      requestMessageList.unshift({
+        role: 'system',
+        content: currentSystemRoleSettings(),
+      });
+    }
   
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          stop_sequences: ['\n\nHuman:'],
-          max_tokens_to_sample: 2046,
-          model,
-          stream: true,
+    const timestamp = Date.now();
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: requestMessageList,
+        time: timestamp,
+        pass: storagePassword,
+        sign: await generateSignature({
+          t: timestamp,
+          m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
         }),
-      });
+      }),
+    });
   
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('API response error:', error.error);
-        setCurrentError(error.error);
-        throw new Error('Request failed');
-      }
-  
-      console.log('API response received:', response);
-  
-      const stream = new ReadableStream({
-        async start(controller) {
-          const encoder = new TextEncoder();
-          const decoder = new TextDecoder();
-      
-          const streamParser = (event: ParsedEvent | ReconnectInterval) => {
-            if (event.type === 'event') {
-              try {
-                const json = JSON.parse(event.data);
-                const text = json.completion;
-                const queue = encoder.encode(text);
-                controller.enqueue(queue);
-              } catch (e) {
-                controller.error(e);
-              }
-            }
-          };
-      
-          const parser = createParser(streamParser);
-      
-          for await (const chunk of response.body) {
-            parser.feed(decoder.decode(chunk));
-          }
-      
-          controller.close();
-        },
-      });
-      
-  
-      const streamResponse = new Response(stream);
-  
-      const reader = streamResponse.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-  
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        if (value) {
-          const char = decoder.decode(value);
-          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
-            continue;
-          }
-  
-          if (char) {
-            setCurrentAssistantMessage(currentAssistantMessage() + char);
-          }
-  
-          isStick() && instantToBottom();
-        }
-        done = readerDone;
-      }
-    } catch (e) {
-      console.error('Error in requestWithLatestMessage:', e);
+    if (!response.ok) {
+      const error = await response.json();
+      console.error(error.error);
+      setCurrentError(error.error);
       setLoading(false);
-      setController(null);
       return;
     }
   
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ]);
-    }
+    const data = await response.json();
+    const text = data.completion;
   
-    setCurrentAssistantMessage('');
-    setLoading(false);
-    setController(null);
-    inputRef.focus();
+    setCurrentAssistantMessage(currentAssistantMessage() + text);
+    archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
   
   
   

@@ -5,7 +5,7 @@ import MessageItem from './MessageItem'
 import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
-import { parseAnthropicStream } from '@/utils/anthropicAPI';
+import { createParser } from 'eventsource-parser';
 
 
 export default () => {
@@ -148,6 +148,7 @@ export default () => {
       return;
     }
   };
+  
   
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

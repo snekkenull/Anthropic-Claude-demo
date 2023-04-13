@@ -1,3 +1,4 @@
+// generate.ts
 import { APIRoute } from 'astro';
 
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
@@ -21,7 +22,8 @@ export const post: APIRoute = async (context) => {
 
   if (!response.ok) {
     const error = await response.json();
-    console.error('API response error:', error);
+    console.error('API response error:', error.error);
+
     return new Response(JSON.stringify(error), {
       status: response.status,
       headers: {
@@ -47,7 +49,15 @@ export const post: APIRoute = async (context) => {
           controller.enqueue(char);
         }
 
-        reader.read().then(processText);
+        reader.read().then(processText).catch((error) => {
+          console.error('Error processing text:', error);
+          controller.error(error);
+          controller.close();
+        });
+      }).catch((error) => {
+        console.error('Error reading from the stream:', error);
+        controller.error(error);
+        controller.close();
       });
     },
   });

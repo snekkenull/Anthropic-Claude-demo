@@ -6,7 +6,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
-import { generateAnthropicPayload } from '@/utils/anthropic';
+import { createAnthropicClient, generateAnthropicPayload } from '@/utils/anthropic';
 
 
 
@@ -90,27 +90,34 @@ export default () => {
     setCurrentAssistantMessage('');
     setCurrentError(null);
     const storagePassword = localStorage.getItem('pass');
+  
     try {
-      const controller = new AbortController();
-      setController(controller);
+      const client = createAnthropicClient();
       const requestMessageList = [...messageList()];
+  
       if (currentSystemRoleSettings()) {
         requestMessageList.unshift({
           role: 'system',
           content: currentSystemRoleSettings(),
         });
       }
+  
       const timestamp = Date.now();
-      const responseText = await generateAnthropicPayload(requestMessageList);
-      setCurrentAssistantMessage(responseText.trim());
+      const completion = await generateAnthropicPayload(client, requestMessageList);
+  
+      if (!completion) {
+        throw new Error('Request failed');
+      }
+  
+      setCurrentAssistantMessage(completion);
+      archiveCurrentMessage();
+      isStick() && instantToBottom();
     } catch (e) {
       console.error(e);
       setLoading(false);
       setController(null);
       return;
     }
-    archiveCurrentMessage();
-    isStick() && instantToBottom();
   };
   
 

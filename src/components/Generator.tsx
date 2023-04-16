@@ -92,7 +92,6 @@ export default () => {
     const storagePassword = localStorage.getItem('pass');
   
     try {
-      const client = createAnthropicClient();
       const requestMessageList = [...messageList()];
   
       if (currentSystemRoleSettings()) {
@@ -103,13 +102,28 @@ export default () => {
       }
   
       const timestamp = Date.now();
-      const completion = await generateAnthropicPayload(client, requestMessageList);
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: requestMessageList,
+          time: timestamp,
+          pass: storagePassword,
+          sign: await generateSignature({
+            t: timestamp,
+            m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
+          }),
+        }),
+      });
   
-      if (!completion) {
+      if (!response.ok) {
+        const error = await response.json();
+        console.error(error.error);
+        setCurrentError(error.error);
         throw new Error('Request failed');
       }
   
-      setCurrentAssistantMessage(completion);
+      const data = await response.json();
+      setCurrentAssistantMessage(data.completion);
       archiveCurrentMessage();
       isStick() && instantToBottom();
     } catch (e) {
@@ -119,6 +133,7 @@ export default () => {
       return;
     }
   };
+  
   
 
   const archiveCurrentMessage = () => {

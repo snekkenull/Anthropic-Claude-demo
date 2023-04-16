@@ -68,5 +68,8 @@ export default defineConfig({
         },
       }),
     ],
+  ssr: {
+      noExternal: false
+    },
   },
 })

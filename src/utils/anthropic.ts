@@ -1,5 +1,5 @@
 import { Client, HUMAN_PROMPT, AI_PROMPT } from "@anthropic-ai/sdk";
-
+import fetch from 'cross-fetch';
 const apiKey = import.meta.env.ANTHROPIC_API_KEY;
 const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
 const client = new Client(apiKey);

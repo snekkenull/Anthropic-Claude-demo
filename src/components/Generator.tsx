@@ -89,8 +89,13 @@ export default () => {
     setCurrentError(null);
   
     try {
+      // Concatenate all previous messages in the conversation
+      const conversation = messageList().reduce((acc, message) => {
+        return acc + `\n\n${message.role === 'human' ? 'Human' : 'Assistant'}: ${message.content}`;
+      }, '');
+  
       const userQuestion = messageList()[messageList().length - 1].content;
-      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+      const prompt = `${conversation}\n\nAssistant:`;
   
       const apiKey = import.meta.env.ANTHROPIC_API_KEY;
       const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';

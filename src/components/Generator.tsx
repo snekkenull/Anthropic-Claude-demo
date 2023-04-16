@@ -6,6 +6,8 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
+import { generateAnthropicPayload } from '@/utils/anthropic';
+
 
 
 export default () => {
@@ -87,95 +89,31 @@ export default () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-  
+    const storagePassword = localStorage.getItem('pass');
     try {
-      // Concatenate all previous messages in the conversation
-      const conversation = messageList().reduce((acc, message) => {
-        return acc + `\n\n${message.role === 'human' ? 'Human' : 'Assistant'}: ${message.content}`;
-      }, '');
-  
-      const userQuestion = messageList()[messageList().length - 1].content;
-      const prompt = `${conversation}\n\nAssistant:`;
-  
-      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
-  
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          stop_sequences: ['\n\nHuman:'],
-          max_tokens_to_sample: 2046,
-          model,
-        }),
-      });
-  
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('API response error:', error.error);
-        setCurrentError(error.error);
-        throw new Error('Request failed');
+      const controller = new AbortController();
+      setController(controller);
+      const requestMessageList = [...messageList()];
+      if (currentSystemRoleSettings()) {
+        requestMessageList.unshift({
+          role: 'system',
+          content: currentSystemRoleSettings(),
+        });
       }
-  
-      console.log('API response received:', response);
-  
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-      let jsonBuffer = '';
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          jsonBuffer += chunk;
-
-          const lastIndex = jsonBuffer.lastIndexOf('\n');
-          if (lastIndex >= 0) {
-            const jsonLines = jsonBuffer.slice(0, lastIndex + 1).split('\n');
-            jsonBuffer = jsonBuffer.slice(lastIndex + 1);
-
-            for (const line of jsonLines) {
-              if (line.trim()) {
-                const parsedMessage = JSON.parse(line);
-                setCurrentAssistantMessage(parsedMessage.completion.trim());
-              }
-            }
-          }
-          isStick() && instantToBottom();
-        }
-        done = readerDone;
-      }
+      const timestamp = Date.now();
+      const responseText = await generateAnthropicPayload(requestMessageList);
+      setCurrentAssistantMessage(responseText.trim());
     } catch (e) {
-      console.error('Error in requestWithLatestMessage:', e);
+      console.error(e);
       setLoading(false);
       setController(null);
       return;
     }
-  
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ]);
-    }
-  
-    setCurrentAssistantMessage('');
-    setLoading(false);
-    setController(null);
-    inputRef.focus();
+    archiveCurrentMessage();
     isStick() && instantToBottom();
   };
+  
 
-  
-  
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([
@@ -191,6 +129,7 @@ export default () => {
       inputRef.focus()
     }
   }
+
 
   const clear = () => {
     inputRef.value = ''

@@ -1,6 +1,6 @@
 export default function plugin(platform?: string) {
   const transform = (code: string, id: string) => {
-    if (id.includes('pages/api/generate.ts')) {
+    if (id.includes('pages/api/anthropic.ts')) {
       return {
         code: code.replace(/^.*?#vercel-disable-blocks([\s\S]+?)#vercel-end.*?$/gm, ''),
         map: null,

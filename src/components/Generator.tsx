@@ -6,7 +6,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
-import { completeWithAnthropic, generatePrompt } from '../utils/anthropic';
+import { completeWithAnthropic, generatePrompt } from '@/utils/anthropic';
 
 
 

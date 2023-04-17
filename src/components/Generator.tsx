@@ -127,7 +127,23 @@ export default () => {
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
-  
+
+  const archiveCurrentMessage = () => {
+    if (currentAssistantMessage()) {
+      setMessageList([
+        ...messageList(),
+        {
+          role: 'assistant',
+          content: currentAssistantMessage(),
+        },
+      ])
+      setCurrentAssistantMessage('')
+      setLoading(false)
+      setController(null)
+      inputRef.focus()
+    }
+  }
+
 
 
   const clear = () => {

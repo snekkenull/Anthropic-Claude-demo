@@ -25,13 +25,16 @@ import 'highlight.js/styles/atom-one-dark.css'
   }
 
   async function checkCurrentAuth() {
-    const password = getCookie('pass')
+  const password = getCookie('pass')
 
-    if (!password) {
+  if (!password) {
+    // Check if SITE_PASSWORD is set
+    if (!import.meta.env.SITE_PASSWORD) {
       window.location.href = '/password'
       return
     }
 
+    // If SITE_PASSWORD is set, try to authenticate the user
     const response = await fetch('/api/auth', {
       method: 'POST',
       headers: {
@@ -47,6 +50,7 @@ import 'highlight.js/styles/atom-one-dark.css'
     if (responseJson.code !== 0)
       window.location.href = '/password'
   }
+}
 
   checkCurrentAuth()
 </script>

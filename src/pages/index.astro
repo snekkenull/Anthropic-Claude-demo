@@ -22,7 +22,7 @@ const { SITE_PASSWORD } = Astro.props;
 
 
 <script>
-    const SITE_PASSWORD = JSON.parse(`{{ JSON.stringify(SITE_PASSWORD) }}`);
+    const SITE_PASSWORD = Astro?.publicRuntimeConfig?.SITE_PASSWORD || '';
 
     function getCookie(name) {
         const value = `; ${document.cookie}`;

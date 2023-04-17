@@ -11,20 +11,26 @@ export const post: APIRoute = async (context) => {
     const completion = await completeWithAnthropic(prompt);
     return {
       status: 200,
-      body: {
-        completion,
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        completion,
+      }),
     };
   } catch (error) {
     console.error("Anthropic API Error: ", error);
     return {
       status: 500,
-      body: {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         error: {
           code: error.name,
           message: error.message,
         },
-      },
+      }),
     };
   }
 };

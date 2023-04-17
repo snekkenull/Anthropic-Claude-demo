@@ -1,16 +1,8 @@
 import { APIRoute } from 'astro';
 import { completeWithAnthropic, generatePrompt } from '@/utils/anthropic';
 import type { ChatMessage } from '@/types';
-const sitePassword = import.meta.env.SITE_PASSWORD || ''
 
 export const post: APIRoute = async (context) => {
-  if (sitePassword && !(sitePassword === pass || passList.includes(pass))) {
-    return new Response(JSON.stringify({
-      error: {
-        message: 'Invalid password.',
-      },
-    }), { status: 401 })
-  }
   try {
     const body = await context.request.json();
     const messages: ChatMessage[] = body.messages;

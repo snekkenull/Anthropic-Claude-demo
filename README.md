@@ -8,7 +8,7 @@ Just for Personal test.
 # Fork
 Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
->KNOWN BUG: 1. No stream function; 2. Some bugs unfixed(no continuous dialog, reponse no format...); 3. Unfinished readme.
+>KNOWN BUG: 1. No stream function; 2. Unfinished readme.
 
 ![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 
@@ -128,7 +128,7 @@ You can control the website through environment variables.
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Your API Key for Anthropic. | `null` |
 | `HEAD_SCRIPTS` | Inject analytics or other scripts before `</head>` of the page | `null` |
-| `SITE_PASSWORD` | Set password for site, support multiple password separated by comma. If not set, site will be public | `null` |
+| `SITE_PASSWORD` | Set password for site, If not set, site will be public | `null` |
 | `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://console.anthropic.com/docs/api/reference) | `claude-v1` |
 
 

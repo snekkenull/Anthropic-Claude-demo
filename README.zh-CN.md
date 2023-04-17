@@ -7,7 +7,7 @@
 
 修改自[Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
-> ⚠️ 注意: 未添加流式传输；一些bug未修复（无持续对话，直接响应等）；说明未及时更新。
+> ⚠️ 注意: 未添加流式传输；说明未及时更新。
 
 ![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 
@@ -120,7 +120,7 @@ docker-compose down
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | 你的 Anthropic API Key | `null` |
 | `HEAD_SCRIPTS` | 在页面的 `</head>` 之前注入分析或其他脚本 | `null` |
-| `SITE_PASSWORD` | 为网站设置密码，支持使用英文逗号创建多个密码。如果未设置，则该网站将是公开的 | `null` |
+| `SITE_PASSWORD` | 为网站设置密码,如果未设置，则该网站将是公开的 | `null` |
 | `ANTHROPIC_API_MODEL` | 使用的 Anthropic 模型. [模型列表](https://console.anthropic.com/docs/api/reference) | `claude-v1` |
 
 ## 常见问题

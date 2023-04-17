@@ -1,6 +1,6 @@
-import { createParser } from 'eventsource-parser';
-import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser';
-import type { ChatMessage } from '@/types';
+import { createParser } from 'eventsource-parser'
+import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser'
+import type { ChatMessage } from '@/types'
 
 const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
 
@@ -18,7 +18,7 @@ export const generatePayload = (apiKey: string, prompt: string): RequestInit & {
     stop_sequences: ['\n\nHuman:'],
     max_tokens_to_sample: 200,
   }),
-});
+})
 
 export const parseAnthropicStream = (rawResponse: Response) => {
   const encoder = new TextEncoder();

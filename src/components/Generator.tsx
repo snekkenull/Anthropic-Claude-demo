@@ -6,7 +6,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
-import { generatePayload, parseAnthropicStream } from '@/utils/anthropic';
+import { generatePayload } from '@/utils/anthropic'
 
 
 
@@ -88,22 +88,34 @@ export default () => {
 
   
   const requestWithLatestMessage = async () => {
-    setLoading(true);
-    setCurrentAssistantMessage('');
-    setCurrentError(null);
+    setLoading(true)
+    setCurrentAssistantMessage('')
+    setCurrentError(null)
   
     try {
       const controller = new AbortController()
       setController(controller)
-      const prompt = messageListToPrompt([...messageList()]);
+      const requestMessageList = [...messageList()]
+  
       if (currentSystemRoleSettings()) {
-        prompt.unshift(`\n\nSystem: ${currentSystemRoleSettings()}`);
+        requestMessageList.unshift({
+          role: 'system',
+          content: currentSystemRoleSettings(),
+        })
       }
-      const finalPrompt = prompt.join('\n');
+  
+      const apiKey = import.meta.env.ANTHROPIC_API_KEY
+      const humanQuestion = requestMessageList[requestMessageList.length - 1]?.content || ''
+      const prompt = `\n\nHuman: ${humanQuestion}\n\nAssistant:`
+      const initOptions = generatePayload(apiKey, prompt)
+  
       const response = await fetch('/api/generate', {
         method: 'POST',
-        body: JSON.stringify({ prompt: finalPrompt }),
-      });
+        body: JSON.stringify({
+          prompt: prompt,
+        }),
+        signal: controller.signal,
+      })
       if (!response.ok) {
         const error = await response.json()
         console.error(error.error)

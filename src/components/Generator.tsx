@@ -5,6 +5,9 @@ import MessageItem from './MessageItem'
 import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
+import { createParser } from 'eventsource-parser';
+import { completeWithAnthropic, generatePrompt } from '@/utils/anthropic';
+
 
 
 export default () => {
@@ -17,6 +20,7 @@ export default () => {
   const [loading, setLoading] = createSignal(false)
   const [controller, setController] = createSignal<AbortController>(null)
   const [isStick, setStick] = createSignal(false)
+
 
   createEffect(() => (isStick() && smoothToBottom()))
 
@@ -82,92 +86,71 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
+  
   const requestWithLatestMessage = async () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-  
+    const requestMessageList = [...messageList()];
+    if (currentSystemRoleSettings()) {
+      requestMessageList.unshift({
+        role: 'system',
+        content: currentSystemRoleSettings(),
+      });
+    }
     try {
-      const userQuestion = messageList()[messageList().length - 1].content;
-      const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
-  
-      const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-      const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-v1';
-  
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
         },
         body: JSON.stringify({
-          prompt: prompt,
-          stop_sequences: ['\n\nHuman:'],
-          max_tokens_to_sample: 2046,
-          model,
+          messages: requestMessageList,
         }),
       });
   
       if (!response.ok) {
         const error = await response.json();
-        console.error('API response error:', error.error);
+        console.error(error.error);
         setCurrentError(error.error);
         throw new Error('Request failed');
       }
   
-      console.log('API response received:', response);
-  
-      const data = response.body;
-      if (!data) {
-        throw new Error('No data');
-      }
-  
-      const reader = data.getReader();
+      const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
   
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         if (value) {
-          const char = decoder.decode(value);
-          if (char === '\n' && currentAssistantMessage().endsWith('\n')) {
-            continue;
+          const data = decoder.decode(value);
+          if (data === '[DONE]') {
+            break;
           }
-  
-          if (char) {
-            const updatedMessage = currentAssistantMessage() + char;
-            const parsedMessage = JSON.parse(updatedMessage);
-            setCurrentAssistantMessage(parsedMessage.completion.trim());
+          try {
+            const parsedData = JSON.parse(data);
+            if (parsedData?.delta?.content) {
+              const text = parsedData.delta.content;
+              setCurrentAssistantMessage((prev) => prev + text);
+              isStick() && instantToBottom();
+            }
+          } catch (e) {
+            console.error("Error parsing JSON:", e);
           }
-  
-          isStick() && instantToBottom();
         }
         done = readerDone;
       }
     } catch (e) {
-      console.error('Error in requestWithLatestMessage:', e);
+      console.error(e);
       setLoading(false);
       setController(null);
       return;
     }
-  
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ]);
-    }
-  
-    setCurrentAssistantMessage('');
-    setLoading(false);
-    setController(null);
-    inputRef.focus();
+    archiveCurrentMessage();
     isStick() && instantToBottom();
   };
-    
+  
+
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([
@@ -183,6 +166,8 @@ export default () => {
       inputRef.focus()
     }
   }
+
+
 
   const clear = () => {
     inputRef.value = ''

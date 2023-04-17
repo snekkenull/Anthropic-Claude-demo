@@ -1,30 +1,44 @@
-import { APIRoute } from 'astro';
+// src/pages/api/generate.ts
 
-const apiKey = import.meta.env.ANTHROPIC_API_KEY;
-const apiUrl = 'https://api.anthropic.com/v1/complete';
+import { APIRoute } from 'astro';
+import { client, generatePrompt } from '@/utils/anthropic';
+import type { ChatMessage } from '@/types';
 
 export const post: APIRoute = async (context) => {
-  console.log('Received request at /api/generate');
-  const requestBody = await context.request.json();
+  const body = await context.request.json();
+  const messages: ChatMessage[] = body.messages;
+  const prompt = generatePrompt(messages);
 
-  console.log('Sending request to Anthropic API:', requestBody);
-  const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': apiKey,
-    },
-    body: JSON.stringify(requestBody),
-  });
+  try {
+    const response = await client.complete({
+      prompt,
+      model: 'claude-v1',
+      stop_sequences: ['\n\nHuman:'],
+      max_tokens_to_sample: 200,
+      stream: true,
+    });
 
-  console.log('Received response from Anthropic API:', response);
-  const responseBody = await response.json();
-  console.log('Response JSON data:', responseBody);
+    context.response.setHeader('Content-Type', 'text/event-stream');
+    context.response.setHeader('Cache-Control', 'no-cache');
+    context.response.setHeader('Connection', 'keep-alive');
 
-  return new Response(JSON.stringify(responseBody), {
-    status: response.status,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+    response.on('data', (chunk) => {
+      context.response.write(`data: ${JSON.stringify(chunk)}\n\n`);
+    });
+
+    response.on('end', () => {
+      context.response.write('data: [DONE]\n\n');
+      context.response.end();
+    });
+
+    response.on('error', (error) => {
+      console.error("Anthropic API Error: ", error);
+      context.response.writeHead(500);
+      context.response.end();
+    });
+  } catch (error) {
+    console.error("Anthropic API Error: ", error);
+    context.response.writeHead(500);
+    context.response.end();
+  }
 };

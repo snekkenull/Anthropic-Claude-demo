@@ -68,5 +68,13 @@ export default defineConfig({
         },
       }),
     ],
+  ssr: {
+    noExternal: ['node-fetch'],
+    },
+  resolve: {
+    alias: {
+      'node-fetch': 'node-fetch/browser',
+     },
+    },
   },
 })

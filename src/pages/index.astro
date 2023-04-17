@@ -7,6 +7,9 @@ import Generator from '../components/Generator'
 import '../message.css'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/atom-one-dark.css'
+
+// Fetch the SITE_PASSWORD from env during the server-side rendering phase
+const { SITE_PASSWORD } = Astro.props;
 ---
 
 <Layout title="Anthropic API Demo">
@@ -16,6 +19,7 @@ import 'highlight.js/styles/atom-one-dark.css'
     <Footer />
   </main>
 </Layout>
+
 
 <script>
     function getCookie(name) {
@@ -44,8 +48,7 @@ import 'highlight.js/styles/atom-one-dark.css'
     }
 
     // Only call checkCurrentAuth if SITE_PASSWORD is set
-    if (import.meta.env.SITE_PASSWORD) {
-      checkCurrentAuth();
+    if (SITE_PASSWORD) {
+    checkCurrentAuth();
     }
-
 </script>

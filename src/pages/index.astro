@@ -25,34 +25,27 @@ import 'highlight.js/styles/atom-one-dark.css'
       }
 
     async function checkCurrentAuth() {
-    const password = getCookie('pass');
+      const password = getCookie('pass')
 
-    // If there's no password, don't redirect
-    if (!import.meta.env.SITE_PASSWORD) {
-      return;
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pass: password,
+        }),
+      })
+
+      const responseJson = await response.json()
+
+      if (responseJson.code !== 0)
+        window.location.href = '/password'
     }
 
-    if (!password) {
-      window.location.href = '/password';
-      return;
+    // Only call checkCurrentAuth if SITE_PASSWORD is set
+    if (import.meta.env.SITE_PASSWORD) {
+      checkCurrentAuth();
     }
 
-    const response = await fetch('/api/auth', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        pass: password,
-      }),
-    })
-
-    const responseJson = await response.json();
-
-    if (responseJson.code !== 0) {
-      window.location.href = '/password';
-    }
-  }
-
-  checkCurrentAuth();
 </script>

@@ -1,4 +1,3 @@
-//src/pages/api/auth.ts
 import { APIRoute } from 'astro';
 
 const validPassword = import.meta.env.SITE_PASSWORD;

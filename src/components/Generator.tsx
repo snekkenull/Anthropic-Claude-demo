@@ -116,40 +116,17 @@ export default () => {
         throw new Error('Request failed');
       }
   
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-  
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        if (value) {
-          const data = decoder.decode(value);
-          if (data === '[DONE]') {
-            break;
-          }
-          try {
-            const parsedData = JSON.parse(data);
-            if (parsedData?.delta?.content) {
-              const text = parsedData.delta.content;
-              setCurrentAssistantMessage((prev) => prev + text);
-              isStick() && instantToBottom();
-            }
-          } catch (e) {
-            console.error("Error parsing JSON:", e);
-          }
-        }
-        done = readerDone;
-      }
-    } catch (e) {
-      console.error(e);
+      const data = await response.json();
+      setCurrentAssistantMessage(data.completion);
+    } catch (error) {
+      console.error(error);
       setLoading(false);
-      setController(null);
       return;
     }
+  
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
-  
 
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {

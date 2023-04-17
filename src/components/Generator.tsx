@@ -116,9 +116,10 @@ export default () => {
         }),
         signal: controller.signal,
       })
+      console.log('Response status:', response.status)
       if (!response.ok) {
         const error = await response.json()
-        console.error(error.error)
+        console.error('JSON error:', error)
         setCurrentError(error.error)
         throw new Error('Request failed')
       }
@@ -141,7 +142,7 @@ export default () => {
         done = readerDone
       }
     } catch (e) {
-      console.error(e)
+      console.error('Request error:', e)
       setLoading(false)
       setController(null)
       return

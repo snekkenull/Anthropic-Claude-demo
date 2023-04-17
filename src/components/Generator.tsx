@@ -98,33 +98,36 @@ export default () => {
         content: currentSystemRoleSettings(),
       });
     }
-    const prompt = generatePrompt(requestMessageList);
     try {
-      const completion = await completeWithAnthropic(prompt);
-      setCurrentAssistantMessage(completion);
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: requestMessageList,
+        }),
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        console.error(error.error);
+        setCurrentError(error.error);
+        throw new Error('Request failed');
+      }
+  
+      const data = await response.json();
+      setCurrentAssistantMessage(data.completion);
     } catch (error) {
       console.error(error);
       setLoading(false);
       return;
     }
+  
     archiveCurrentMessage();
     isStick() && instantToBottom();
   };
-  const archiveCurrentMessage = () => {
-    if (currentAssistantMessage()) {
-      setMessageList([
-        ...messageList(),
-        {
-          role: 'assistant',
-          content: currentAssistantMessage(),
-        },
-      ])
-      setCurrentAssistantMessage('')
-      setLoading(false)
-      setController(null)
-      inputRef.focus()
-    }
-  }
+  
 
 
   const clear = () => {

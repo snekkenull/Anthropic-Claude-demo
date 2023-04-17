@@ -25,6 +25,17 @@ import 'highlight.js/styles/atom-one-dark.css'
   }
 
   async function checkCurrentAuth() {
+    const response = await fetch('/api/auth', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    const responseJson = await response.json()
+
+    if (!responseJson.passwordEnabled) return;
+
     const password = getCookie('pass')
 
     if (!password) {
@@ -32,7 +43,7 @@ import 'highlight.js/styles/atom-one-dark.css'
       return
     }
 
-    const response = await fetch('/api/auth', {
+    const authResponse = await fetch('/api/auth', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,9 +53,9 @@ import 'highlight.js/styles/atom-one-dark.css'
       }),
     })
 
-    const responseJson = await response.json()
+    const authResponseJson = await authResponse.json()
 
-    if (responseJson.code !== 0)
+    if (authResponseJson.code !== 0)
       window.location.href = '/password'
   }
 

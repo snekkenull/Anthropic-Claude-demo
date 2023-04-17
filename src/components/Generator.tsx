@@ -6,7 +6,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
-import { generatePayload } from '@/utils/anthropic'
+import { completeWithAnthropic, generatePrompt } from '../utils/anthropic';
 
 
 
@@ -88,68 +88,28 @@ export default () => {
 
   
   const requestWithLatestMessage = async () => {
-    setLoading(true)
-    setCurrentAssistantMessage('')
-    setCurrentError(null)
-  
-    try {
-      const controller = new AbortController()
-      setController(controller)
-      const requestMessageList = [...messageList()]
-  
-      if (currentSystemRoleSettings()) {
-        requestMessageList.unshift({
-          role: 'system',
-          content: currentSystemRoleSettings(),
-        })
-      }
-  
-      const apiKey = import.meta.env.ANTHROPIC_API_KEY
-      const humanQuestion = requestMessageList[requestMessageList.length - 1]?.content || ''
-      const prompt = `\n\nHuman: ${humanQuestion}\n\nAssistant:`
-      const initOptions = generatePayload(apiKey, prompt)
-  
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        body: JSON.stringify({
-          prompt: prompt,
-        }),
-        signal: controller.signal,
-      })
-      console.log('Response status:', response.status)
-      if (!response.ok) {
-        const error = await response.json()
-        console.error('JSON error:', error)
-        setCurrentError(error.error)
-        throw new Error('Request failed')
-      }
-      const data = response.body
-      if (!data)
-        throw new Error('No data')
-      const reader = data.getReader()
-      const decoder = new TextDecoder('utf-8')
-      let done = false
-      while (!done) {
-        const { value, done: readerDone } = await reader.read()
-        if (value) {
-          const char = decoder.decode(value)
-          if (char === '\n' && currentAssistantMessage().endsWith('\n'))
-            continue
-          if (char)
-            setCurrentAssistantMessage(currentAssistantMessage() + char)
-          isStick() && instantToBottom()
-        }
-        done = readerDone
-      }
-    } catch (e) {
-      console.error('Request error:', e)
-      setLoading(false)
-      setController(null)
-      return
+    setLoading(true);
+    setCurrentAssistantMessage('');
+    setCurrentError(null);
+    const requestMessageList = [...messageList()];
+    if (currentSystemRoleSettings()) {
+      requestMessageList.unshift({
+        role: 'system',
+        content: currentSystemRoleSettings(),
+      });
     }
-    archiveCurrentMessage()
-    isStick() && instantToBottom()
-  }
+    const prompt = generatePrompt(requestMessageList);
+    try {
+      const completion = await completeWithAnthropic(prompt);
+      setCurrentAssistantMessage(completion);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      return;
+    }
+    archiveCurrentMessage();
+    isStick() && instantToBottom();
+  };
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

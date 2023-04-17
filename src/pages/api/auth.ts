@@ -1,4 +1,4 @@
-// src/pages/api/auth.ts
+//src/pages/api/auth.ts
 import { APIRoute } from 'astro';
 
 const validPassword = import.meta.env.SITE_PASSWORD;
@@ -8,8 +8,8 @@ export const post: APIRoute = async (context) => {
   const { pass } = requestBody;
 
   if (!validPassword) {
-    return new Response(JSON.stringify({ code: 1, message: 'Invalid password' }), {
-      status: 403,
+    return new Response(JSON.stringify({ code: 0 }), {
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
       },

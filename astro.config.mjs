@@ -22,9 +22,6 @@ const envAdapter = () => {
 
 // https://astro.build/config
 export default defineConfig({
-  publicRuntimeConfig: {
-    SITE_PASSWORD: process.env.SITE_PASSWORD,
-  },
   integrations: [
     unocss(),
     solidJs(),

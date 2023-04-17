@@ -1,33 +1,13 @@
-import { APIRoute } from 'astro';
+import type { APIRoute } from 'astro'
 
-const validPassword = import.meta.env.SITE_PASSWORD;
+const realPassword = import.meta.env.SITE_PASSWORD || ''
+const passList = realPassword.split(',') || []
 
-export const post: APIRoute = async (context) => {
-  const requestBody = await context.request.json();
-  const { pass } = requestBody;
+export const post: APIRoute = async(context) => {
+  const body = await context.request.json()
 
-  if (!validPassword) {
-    return new Response(JSON.stringify({ code: 0 }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-
-  if (pass === validPassword) {
-    return new Response(JSON.stringify({ code: 0 }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  } else {
-    return new Response(JSON.stringify({ code: 1, message: 'Invalid password' }), {
-      status: 403,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-};
+  const { pass } = body
+  return new Response(JSON.stringify({
+    code: (!realPassword || pass === realPassword || passList.includes(pass)) ? 0 : -1,
+  }))
+}

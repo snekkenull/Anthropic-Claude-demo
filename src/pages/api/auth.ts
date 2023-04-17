@@ -8,7 +8,12 @@ export const post: APIRoute = async (context) => {
   const { pass } = requestBody;
 
   if (!validPassword) {
-    return;
+    return new Response(JSON.stringify({ code: 1, message: 'Invalid password' }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
   if (pass === validPassword) {

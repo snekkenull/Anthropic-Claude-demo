@@ -6,7 +6,7 @@ import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
 import type { ChatMessage, ErrorMessage } from '@/types'
 import { createParser } from 'eventsource-parser';
-import { createAnthropicClient, generateAnthropicPayload } from '@/utils/anthropic';
+import { generatePayload, parseAnthropicStream } from '@/utils/anthropic';
 
 
 
@@ -20,6 +20,7 @@ export default () => {
   const [loading, setLoading] = createSignal(false)
   const [controller, setController] = createSignal<AbortController>(null)
   const [isStick, setStick] = createSignal(false)
+
 
   createEffect(() => (isStick() && smoothToBottom()))
 
@@ -85,53 +86,57 @@ export default () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })
   }
 
+  
   const requestWithLatestMessage = async () => {
     setLoading(true);
     setCurrentAssistantMessage('');
     setCurrentError(null);
-    const storagePassword = localStorage.getItem('pass');
   
     try {
-      const requestMessageList = [...messageList()];
-  
+      const controller = new AbortController()
+      setController(controller)
+      const prompt = messageListToPrompt([...messageList()]);
       if (currentSystemRoleSettings()) {
-        requestMessageList.unshift({
-          role: 'system',
-          content: currentSystemRoleSettings(),
-        });
+        prompt.unshift(`\n\nSystem: ${currentSystemRoleSettings()}`);
       }
-  
-      const timestamp = Date.now();
+      const finalPrompt = prompt.join('\n');
       const response = await fetch('/api/generate', {
         method: 'POST',
-        body: JSON.stringify({
-          messages: requestMessageList,
-          time: timestamp,
-          pass: storagePassword,
-        }),
+        body: JSON.stringify({ prompt: finalPrompt }),
       });
-  
       if (!response.ok) {
-        const error = await response.json();
-        console.error(error.error);
-        setCurrentError(error.error);
-        throw new Error('Request failed');
+        const error = await response.json()
+        console.error(error.error)
+        setCurrentError(error.error)
+        throw new Error('Request failed')
       }
-  
-      const data = await response.json();
-      setCurrentAssistantMessage(data.completion);
-      archiveCurrentMessage();
-      isStick() && instantToBottom();
+      const data = response.body
+      if (!data)
+        throw new Error('No data')
+      const reader = data.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let done = false
+      while (!done) {
+        const { value, done: readerDone } = await reader.read()
+        if (value) {
+          const char = decoder.decode(value)
+          if (char === '\n' && currentAssistantMessage().endsWith('\n'))
+            continue
+          if (char)
+            setCurrentAssistantMessage(currentAssistantMessage() + char)
+          isStick() && instantToBottom()
+        }
+        done = readerDone
+      }
     } catch (e) {
-      console.error(e);
-      setLoading(false);
-      setController(null);
-      return;
+      console.error(e)
+      setLoading(false)
+      setController(null)
+      return
     }
-  };
-  
-  
-
+    archiveCurrentMessage()
+    isStick() && instantToBottom()
+  }
   const archiveCurrentMessage = () => {
     if (currentAssistantMessage()) {
       setMessageList([

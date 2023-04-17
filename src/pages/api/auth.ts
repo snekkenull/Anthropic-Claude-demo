@@ -7,20 +7,23 @@ export const post: APIRoute = async (context) => {
   const requestBody = await context.request.json();
   const { pass } = requestBody;
 
-  // Remove the check for SITE_PASSWORD
-  // if (pass === validPassword) {
-  return new Response(JSON.stringify({ code: 0 }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  // } else {
-  //   return new Response(JSON.stringify({ code: 1, message: 'Invalid password' }), {
-  //     status: 403,
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //   });
-  // }
+  if (!validPassword) {
+    return;
+  }
+
+  if (pass === validPassword) {
+    return new Response(JSON.stringify({ code: 0 }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } else {
+    return new Response(JSON.stringify({ code: 1, message: 'Invalid password' }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
 };

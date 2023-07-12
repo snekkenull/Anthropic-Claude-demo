@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly SECRET_KEY: string
   readonly SITE_PASSWORD: string
   readonly ANTHROPIC_API_MODEL: string
+  readonly ANTHROPIC_API_TOKEN: string
 }
 
 interface ImportMeta {

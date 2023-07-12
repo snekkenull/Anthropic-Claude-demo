@@ -5,6 +5,8 @@ const apiKey = import.meta.env.ANTHROPIC_API_KEY;
 
 const model = import.meta.env.ANTHROPIC_API_MODEL || 'claude-2';
 
+const max_tokens = import.meta.env.ANTHROPIC_API_TOKEN || '1000000';
+
 export const client = new Client(apiKey);
 
 export const generatePrompt = (messages: ChatMessage[]): string => {
@@ -22,7 +24,7 @@ export const completeWithAnthropic = async (prompt: string) => {
       prompt,
       model,
       stop_sequences: [HUMAN_PROMPT],
-      max_tokens_to_sample: 1000000,
+      max_tokens_to_sample: max_tokens,
       stream: true,
     });
 

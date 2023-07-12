@@ -50,7 +50,6 @@ A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
 > 
 > <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsnekkenull%2FAnthropic-Claude-demo&env=ANTHROPIC_API_KEY&env=SITE_PASSWORD&envDescription=Anthropic%20API%20Key" alt="Deploy with Vercel" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel" height=24 style="vertical-align: middle; margin-right: 4px;"></a>
 
-![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.4wzfb79qt7k0.webp)
 
 
 ### Deploy With Netlify
@@ -61,18 +60,12 @@ A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
 
 1. [Fork](https://github.com/snekkenull/Anthropic-Claude-demo/fork) this project，Go to [https://app.netlify.com/start](https://app.netlify.com/start) new Site, select the project you `forked` done, and connect it with your `GitHub` account.
 
-![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.3nlt4hgzb16o.webp)
-
-![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230310/image.5fhfouap270g.webp)
-
 
 2. Select the branch you want to deploy, then configure environment variables in the project settings.
 
-![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230311/image.gfs9lx8c854.webp)
 
 3. Select the default build command and output directory, Click the `Deploy Site` button to start deploying the site。
 
-![image](https://cdn.staticaly.com/gh/yzh990918/static@master/20230311/image.4jky9e1wbojk.webp)
 
 
 ### Deploy with Docker
@@ -123,7 +116,8 @@ You can control the website through environment variables.
 | `ANTHROPIC_API_KEY` | Your API Key for Anthropic. | `null` |
 | `HEAD_SCRIPTS` | Inject analytics or other scripts before `</head>` of the page | `null` |
 | `SITE_PASSWORD` | Set password for site, If not set, site will be public | `null` |
-| `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://console.anthropic.com/docs/api/reference) | `claude-v1` |
+| `ANTHROPIC_API_MODEL` | ID of the model to use. [List models](https://console.anthropic.com/docs/api/reference) | `claude-2` |
+| `ANTHROPIC_API_TOKEN` | Your default tokens for dialog. | `1000000` |
 
 
 ## Frequently Asked Questions

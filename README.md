@@ -1,14 +1,11 @@
 # Anthropic-API Demo
 
-English | [简体中文](./README.zh-CN.md)
-
 A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
-Just for Personal test.
 
 # Fork
 Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
 
->KNOWN BUG: 1. No stream function; 2. Unfinished readme.
+>Pending optimization: Stream function.
 
 ![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 

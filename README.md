@@ -2,9 +2,6 @@
 
 A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
 
-# Fork
-Origin Auther's repo [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
-
 >Pending optimization: Stream function.
 
 ![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
@@ -148,7 +145,8 @@ Q: `PWA` is not working?
 A: Current `PWA` does not support deployment on Netlify, you can choose vercel or node deployment.
 ## Contributing
 
-Thanks ddiu8081 [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
+Thanks Chatgpt-demo Auther's ddiu8081 [Chatgpt-demo](https://github.com/ddiu8081/chatgpt-demo)
+
 ## License
 
 MIT © [snekkenull](https://github.com/snekkenull/Anthropic-Claude-demo/blob/main/LICENSE)

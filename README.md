@@ -2,7 +2,7 @@
 
 A demo repo based on [Anthropic API.](https://console.anthropic.com/docs/api)
 
->Pending optimization: Stream function.
+>CHANGELOG: Fix the XMLHttpRequest error caused by sdk.
 
 ![chat-logo](https://logovtor.com/wp-content/uploads/2021/06/anthropic-ai-logo-vector.png)
 

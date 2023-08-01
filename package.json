@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx,.astro --fix"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.4.3",
+    "@anthropic-ai/sdk": "latest",
     "@astrojs/netlify": "2.0.0",
     "@astrojs/node": "^5.0.4",
     "@astrojs/solid-js": "^2.0.2",
